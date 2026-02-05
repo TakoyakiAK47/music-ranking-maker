@@ -10,157 +10,71 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
+    <script src="./playlist.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: #f4f7f9;
-        }
-        #ranking-board p {
-            line-height: 1.6 !important;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f8fafc;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e1;
-        }
-        .rank-slot {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .music-card {
-            transition: all 0.2s ease;
-        }
-        .music-card:hover {
-            transform: translateY(-2px);
-        }
-        #youtube-player-container {
-            display: none;
-        }
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f4f7f9; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        #youtube-player-container { display: none; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <div id="youtube-player-container"></div>
 
-    <script src="./playlist.js"></script>
-
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- SVG Icons (エラー回避のため直接定義) ---
+        // SVG Icons
         const Icons = {
-            Trophy: ({className}) => (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-            ),
-            Search: ({className}) => (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            ),
-            Download: ({className}) => (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-            ),
-            Play: ({className}) => (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            ),
-            Pause: ({className}) => (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            ),
-            XCircle: ({className}) => (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
-            ),
-            Music: ({className}) => (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-            )
+            Trophy: ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55-.47.98-.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>),
+            Search: ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>),
+            Download: ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>),
+            Play: ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}><polygon points="5 3 19 12 5 21 5 3"/></svg>),
+            Pause: ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>),
+            XCircle: ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>),
+            Music: ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>)
         };
 
         const App = () => {
-            // --- データの統合 ---
-            // playlist.js で定義された変数が window オブジェクト経由で参照できるか確認
-            const allSongs = useMemo(() => {
-                const mainList = window.playlist || [];
-                const charaList = window.characterSongPlaylist || [];
-                // 両方のリストを結合
-                return [...mainList, ...charaList];
+            // --- データの取得 ---
+            const [songs, setSongs] = useState([]);
+            
+            useEffect(() => {
+                // playlist.js の変数が読み込まれるのを待つ
+                const data = window.playlist || [];
+                setSongs(data);
+                
+                // デバッグ用：コンソールに曲数を表示
+                console.log("Loaded songs count:", data.length);
             }, []);
 
             const [rankings, setRankings] = useState(Array(10).fill(null));
             const [selectedSlot, setSelectedSlot] = useState(0);
             const [searchTerm, setSearchTerm] = useState("");
             const [playingVideoId, setPlayingVideoId] = useState(null);
-            
             const playerRef = useRef(null);
 
-            // --- 画像保存機能 ---
-            const saveAsImage = async () => {
-                const element = document.getElementById('ranking-board');
-                if (!element) return;
-
-                try {
-                    const canvas = await html2canvas(element, {
-                        useCORS: true,
-                        allowTaint: true,
-                        backgroundColor: '#f8fafc',
-                        scale: 3,
-                        logging: false,
-                        onclone: (clonedDoc) => {
-                            const target = clonedDoc.getElementById('ranking-board');
-                            if (target) {
-                                const texts = target.querySelectorAll('p');
-                                texts.forEach(p => {
-                                    p.style.lineHeight = '1.8';
-                                    p.style.paddingBottom = '4px';
-                                });
-                            }
-                        }
-                    });
-
-                    const link = document.createElement('a');
-                    link.download = `blue-archive-ranking-${new Date().getTime()}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                } catch (err) {
-                    console.error('保存に失敗しました:', err);
-                    alert('画像の保存に失敗しました。');
-                }
-            };
-
-            // YouTube Player Setup
+            // YouTube設定
             useEffect(() => {
                 if (!window.YT) {
                     const tag = document.createElement('script');
                     tag.src = "https://www.youtube.com/iframe_api";
-                    const firstScriptTag = document.getElementsByTagName('script')[0];
-                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                    document.body.appendChild(tag);
                 }
-
                 window.onYouTubeIframeAPIReady = () => {
                     playerRef.current = new YT.Player('youtube-player-container', {
-                        height: '0',
-                        width: '0',
-                        events: {
-                            'onStateChange': (event) => {
-                                if (event.data === YT.PlayerState.ENDED) {
-                                    setPlayingVideoId(null);
-                                }
-                            }
-                        }
+                        height: '0', width: '0',
+                        events: { 'onStateChange': (e) => { if(e.data === 0) setPlayingVideoId(null); } }
                     });
                 };
             }, []);
 
-            // プレビュー再生・停止
             const togglePreview = (e, videoId) => {
                 e.stopPropagation();
-                
-                if (!playerRef.current || !playerRef.current.loadVideoById) return;
-
+                if (!playerRef.current?.loadVideoById) return;
                 if (playingVideoId === videoId) {
                     playerRef.current.pauseVideo();
                     setPlayingVideoId(null);
@@ -172,208 +86,90 @@
             };
 
             const filteredSongs = useMemo(() => {
-                if (!allSongs) return [];
-                return allSongs.filter(song => 
+                return songs.filter(song => 
                     song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     song.composer.toLowerCase().includes(searchTerm.toLowerCase())
                 );
-            }, [searchTerm, allSongs]);
+            }, [searchTerm, songs]);
 
-            const handleSelectSong = (song) => {
-                const newRankings = [...rankings];
-                newRankings[selectedSlot] = song;
-                setRankings(newRankings);
-                if (selectedSlot < 9) setSelectedSlot(selectedSlot + 1);
-            };
-
-            const clearSlot = (index) => {
-                const newRankings = [...rankings];
-                newRankings[index] = null;
-                setRankings(newRankings);
-                setSelectedSlot(index);
+            const saveAsImage = async () => {
+                const element = document.getElementById('ranking-board');
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                const link = document.createElement('a');
+                link.download = 'ranking.png';
+                link.href = canvas.toDataURL();
+                link.click();
             };
 
             return (
-                <div className="min-h-screen bg-[#f0f4f8] text-slate-800 p-4 md:p-8">
-                    <header className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                        <div>
-                            <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic">
-                                MUSIC <span className="text-sky-500">RANKING</span> MAKER
-                            </h1>
-                            <p className="text-slate-400 text-xs font-bold mt-1 tracking-widest uppercase">
-                                Blue Archive Fan Tool
-                            </p>
-                        </div>
-                        <button 
-                            onClick={saveAsImage}
-                            className="bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-sky-200"
-                        >
-                            <Icons.Download className="w-5 h-5" />
-                            画像を保存する
+                <div className="min-h-screen bg-[#f0f4f8] p-4 md:p-8">
+                    <header className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row items-end justify-between gap-4">
+                        <h1 className="text-4xl font-black italic">MUSIC <span className="text-sky-500">RANKING</span></h1>
+                        <button onClick={saveAsImage} className="bg-sky-500 text-white px-6 py-3 rounded-2xl font-bold flex gap-2">
+                            <Icons.Download className="w-5 h-5" />画像保存
                         </button>
                     </header>
 
                     <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        {/* Ranking Board */}
+                        {/* 左：ランキング表示 */}
                         <div className="lg:col-span-7">
-                            <div id="ranking-board" className="bg-white rounded-[32px] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
-                                <div className="bg-slate-900 p-6 flex items-center justify-between">
+                            <div id="ranking-board" className="bg-white rounded-[32px] shadow-xl overflow-hidden border">
+                                <div className="bg-slate-900 p-6 flex justify-between items-center">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center rotate-3">
-                                            <Icons.Trophy className="text-white w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-white font-black text-xl italic tracking-tight">TOP 10</h2>
-                                            <p className="text-sky-400/60 text-[10px] font-bold tracking-[0.2em] leading-none uppercase">MY FAVORITE TRACKS</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-white/30 text-[10px] font-black tracking-widest">BLUE ARCHIVE</p>
+                                        <Icons.Trophy className="text-sky-500 w-8 h-8" />
+                                        <span className="text-white font-black text-xl italic">TOP 10</span>
                                     </div>
                                 </div>
-
                                 <div className="p-4 space-y-2">
                                     {rankings.map((song, index) => (
-                                        <div 
-                                            key={index}
-                                            onClick={() => setSelectedSlot(index)}
-                                            className={`rank-slot group relative flex items-center gap-4 p-3 rounded-2xl cursor-pointer border-2 transition-all
-                                                ${selectedSlot === index ? 'border-sky-400 bg-sky-50/50' : 'border-transparent hover:bg-slate-50'}`}
-                                        >
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg italic flex-shrink-0
-                                                ${index < 3 ? 'bg-slate-900 text-sky-400' : 'bg-slate-100 text-slate-400'}`}>
-                                                {index + 1}
-                                            </div>
-                                            
+                                        <div key={index} onClick={() => setSelectedSlot(index)} 
+                                             className={`flex items-center gap-4 p-3 rounded-2xl border-2 cursor-pointer transition-all
+                                             ${selectedSlot === index ? 'border-sky-400 bg-sky-50' : 'border-transparent hover:bg-slate-50'}`}>
+                                            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black">{index + 1}</div>
                                             {song ? (
-                                                <div className="flex-1 flex items-center gap-3 overflow-visible py-2">
-                                                    <img src={song.imageUrl} className="w-12 h-12 rounded-lg object-cover shadow-sm flex-shrink-0" alt="" />
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="font-black text-sm text-slate-900 tracking-tight leading-relaxed mb-0.5">
-                                                            {song.title}
-                                                        </p>
-                                                        <p className="text-[10px] text-slate-400 font-bold uppercase leading-relaxed">
-                                                            {song.composer}
-                                                        </p>
+                                                <div className="flex-1 flex items-center gap-3">
+                                                    <img src={song.imageUrl} className="w-12 h-12 rounded-lg object-cover" />
+                                                    <div className="flex-1">
+                                                        <p className="font-bold text-sm leading-tight">{song.title}</p>
+                                                        <p className="text-[10px] text-slate-400 font-bold uppercase">{song.composer}</p>
                                                     </div>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); clearSlot(index); }}
-                                                        className="ml-auto p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
-                                                    >
-                                                        <Icons.XCircle className="w-5 h-5" />
-                                                    </button>
+                                                    <button onClick={(e) => { e.stopPropagation(); const n=[...rankings]; n[index]=null; setRankings(n); }}><Icons.XCircle className="w-5 h-5 text-slate-300" /></button>
                                                 </div>
-                                            ) : (
-                                                <div className="flex-1 flex items-center">
-                                                    <div className="h-px flex-1 bg-slate-100 mr-4"></div>
-                                                    <span className="text-[10px] font-black text-slate-200 tracking-[0.3em] uppercase">Empty Slot</span>
-                                                </div>
-                                            )}
+                                            ) : <div className="text-slate-200 text-[10px] tracking-widest uppercase">Empty</div>}
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Song Selector */}
-                        <div className="lg:col-span-5 flex flex-col h-[800px]">
-                            <div className="bg-white rounded-[32px] shadow-xl shadow-slate-200/50 flex flex-col h-full overflow-hidden border border-slate-100 p-6">
-                                <div className="mb-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="font-black text-xl italic text-slate-900 tracking-tight">MUSIC LIST</h3>
-                                        <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold uppercase tracking-widest">
-                                            {filteredSongs.length} tracks
-                                        </span>
-                                    </div>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                            <Icons.Search className="text-slate-400 w-4 h-4" />
-                                        </div>
-                                        <input 
-                                            type="text" 
-                                            placeholder="曲名・作曲家で検索..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full bg-slate-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-sky-400 transition-all outline-none"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3">
-                                    {filteredSongs.length > 0 ? (
-                                        filteredSongs.map((song, i) => (
-                                            <div 
-                                                key={i}
-                                                onClick={() => handleSelectSong(song)}
-                                                className="music-card group bg-white border border-slate-100 p-3 rounded-2xl cursor-pointer hover:shadow-lg hover:shadow-slate-100 hover:border-sky-100"
-                                            >
-                                                <div className="flex gap-4">
-                                                    <div className="relative w-20 h-20 flex-shrink-0 group/thumb">
-                                                        <img 
-                                                            src={song.imageUrl} 
-                                                            className="w-full h-full rounded-xl object-cover" 
-                                                            alt={song.title} 
-                                                        />
-                                                        {/* Play Button Overlay */}
-                                                        <div 
-                                                            onClick={(e) => togglePreview(e, song.videoId)}
-                                                            className={`absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 transition-opacity 
-                                                            ${playingVideoId === song.videoId ? 'opacity-100' : 'opacity-0 group-hover/thumb:opacity-100'}`}
-                                                        >
-                                                            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 text-white">
-                                                                {playingVideoId === song.videoId ? 
-                                                                    <Icons.Pause className="w-5 h-5 fill-current" /> : 
-                                                                    <Icons.Play className="w-5 h-5 fill-current" />
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                        {playingVideoId === song.videoId && (
-                                                            <div className="absolute -bottom-1 -right-1 flex gap-0.5 items-end h-4 bg-sky-500 px-1 rounded-sm shadow-sm">
-                                                                <div className="w-0.5 bg-white animate-[bounce_1s_infinite_0ms]" style={{height: '60%'}}></div>
-                                                                <div className="w-0.5 bg-white animate-[bounce_1s_infinite_200ms]" style={{height: '90%'}}></div>
-                                                                <div className="w-0.5 bg-white animate-[bounce_1s_infinite_400ms]" style={{height: '70%'}}></div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="min-w-0 flex-1 py-1 flex flex-col justify-between">
-                                                        <div>
-                                                            <p className="font-bold text-slate-800 leading-tight break-words text-[10px] sm:text-xs">{song.title}</p>
-                                                            <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{song.composer}</p>
-                                                        </div>
-                                                        {song.context && (
-                                                            <span className="text-[9px] text-sky-400 font-black tracking-widest uppercase opacity-60">
-                                                                {song.context}
-                                                            </span>
-                                                        )}
-                                                    </div>
+                        {/* 右：検索とリスト */}
+                        <div className="lg:col-span-5 h-[800px] flex flex-col">
+                            <div className="bg-white rounded-[32px] shadow-xl p-6 flex flex-col h-full border">
+                                <input 
+                                    type="text" placeholder="検索..." value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-slate-50 rounded-2xl p-4 mb-4 outline-none focus:ring-2 focus:ring-sky-400 font-bold"
+                                />
+                                <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                                    {filteredSongs.length > 0 ? filteredSongs.map((song, i) => (
+                                        <div key={i} onClick={() => { const n=[...rankings]; n[selectedSlot]=song; setRankings(n); if(selectedSlot<9) setSelectedSlot(selectedSlot+1); }}
+                                             className="flex gap-4 p-3 border rounded-2xl hover:border-sky-300 cursor-pointer">
+                                            <div className="relative w-16 h-16 flex-shrink-0">
+                                                <img src={song.imageUrl} className="w-full h-full rounded-xl object-cover" />
+                                                <div onClick={(e) => togglePreview(e, song.videoId)} className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
+                                                    {playingVideoId === song.videoId ? <Icons.Pause className="text-white w-6 h-6" /> : <Icons.Play className="text-white w-6 h-6" />}
                                                 </div>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-center py-24">
-                                            <div className="mb-4 flex justify-center opacity-10">
-                                                <Icons.Music className="w-20 h-20 text-slate-400" />
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-xs">{song.title}</p>
+                                                <p className="text-[10px] text-slate-400 uppercase truncate">{song.composer}</p>
                                             </div>
-                                            <p className="text-slate-400 text-sm font-bold tracking-widest">該当する楽曲がありません</p>
                                         </div>
-                                    )}
-                                </div>
-                                
-                                <div className="mt-4 pt-4 border-t border-slate-50">
-                                    <div className="flex items-center justify-center gap-2 text-[10px] text-sky-400 font-bold bg-sky-50 py-2 rounded-xl">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-                                        現在 {selectedSlot + 1} 位を選択中
-                                    </div>
+                                    )) : <p className="text-center py-20 text-slate-400 font-bold">楽曲が見つかりません</p>}
                                 </div>
                             </div>
                         </div>
                     </main>
-                    
-                    <div className="max-w-6xl mx-auto mt-6 px-4">
-                        <p className="text-[10px] text-slate-400 font-bold text-center uppercase tracking-[0.2em]">
-                           @ 2026 MUSIC RANKING MAKER
-                        </p>
-                    </div>
                 </div>
             );
         };
