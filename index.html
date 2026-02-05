@@ -4,25 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ブルアカ楽曲ランキングメーカー</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel (JSX用) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
-        
-        body {
+     body {
     font-family: 'Noto Sans JP', sans-serif;
     background-color: #f4f7f9;
 }
-/* 文字の下が見切れるのを防ぐための強制設定 */
 #ranking-card p {
     line-height: 1.6 !important;
     padding-bottom: 2px !important;
@@ -371,7 +364,6 @@
   { title: "発明！ロマン！Engineer Dream！！", videoId: "1kjkh0svH4E", composer: "エンジニア部 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/1kjkh0svH4E/hqdefault.jpg" },
   { title: "黒翼が奏でる正義", videoId: "s9jqvjjPouA", composer: "正義実現委員会 / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/s9jqvjjPouA/hqdefault.jpg" },
   { title: "出発進行！ハイランダー！！", videoId: "sxPOS_8JYPc", composer: "ハイランダー / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/sxPOS_8JYPc/hqdefault.jpg" },
-  
   { title: "あゆみ", videoId: "_Dd0HKNakSY", composer: "シロコ(CV:小倉唯) / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/_Dd0HKNakSY/hqdefault.jpg" },
   { title: "これが私のハードボイルド！？", videoId: "D0P7GouqHJ0", composer: "アル(CV:近藤玲奈) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/D0P7GouqHJ0/hqdefault.jpg" },
   { title: "好きなんです！", videoId: "5p3z3SGKKfo", composer: "ヒフミ(CV:本渡楓) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/5p3z3SGKKfo/hqdefault.jpg" },
@@ -393,7 +385,6 @@
   { title: "Happy×Smiley", videoId: "vBoTaPGU64E", composer: "ハナエ(CV:優木かな) / john=hive(IOSYS) / EmoCosine", context: "", imageUrl: "https://i.ytimg.com/vi/vBoTaPGU64E/hqdefault.jpg" },
   { title: "温もりのそばで、羽を預けて", videoId: "csGoYUHdU2o", composer: "ヒナ(CV:広橋涼) / john=hive(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/csGoYUHdU2o/hqdefault.jpg" },
   { title: "幸せになるよ", videoId: "VWFe3AzwHmI", composer: "ミカ(CV:東山奈央) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/VWFe3AzwHmI/hqdefault.jpg" },
-  
   { title: "Clear Morning", videoId: "rFeBMv98X30", composer: "小倉 唯", context: "", imageUrl: "https://i.ytimg.com/vi/rFeBMv98X30/hqdefault.jpg" },
   { title: "わたしたちのクエスト", videoId: "lsQrEl4znzo", composer: "モモイ(CV.徳井青空) / ミドリ(CV.高田憂希) / ユズ(CV.寺澤百花) / アリス(CV.田中美海) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/lsQrEl4znzo/hqdefault.jpg" },
   { title: "優しさの記憶", videoId: "GXh57ZcnyYg", composer: "鹿乃 / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/GXh57ZcnyYg/hqdefault.jpg" },
@@ -420,9 +411,8 @@
         const saveAsImage = async () => {
             const element = document.getElementById('ranking-card');
             if (!element) return;
-
             try {
-                const canvas = await html2canvas(element, {
+            const canvas = await html2canvas(element, {
                     useCORS: true,
                     allowTaint: true,
                     backgroundColor: '#f8fafc',
@@ -436,10 +426,13 @@
                             texts.forEach(p => {
                                 p.style.lineHeight = '1.8';
                                 p.style.paddingBottom = '4px';
-                            });
-                        }
-                    }
-                }); // ← ここで html2canvas のカッコを閉じる
+                            }
+                                          }
+                                          }
+            }
+                                             }
+        }
+        
 
                 const saveAsImage = async () => {
             const element = document.getElementById('ranking-card');
@@ -462,7 +455,7 @@
                             });
                         }
                     }
-                }); // ここで html2canvas のオプションを閉じる
+                }); 
 
                 const link = document.createElement('a');
                 link.download = `blue-archive-ranking-${new Date().getTime()}.png`;
