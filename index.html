@@ -417,23 +417,39 @@
 
         ];
 
-        // アイコンコンポーネント
-        const Icon = ({ name, className = "w-4 h-4" }) => {
-            const iconRef = useRef(null);
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [name]);
-            return <i data-lucide={name} className={className}></i>;
-        };
+        const saveAsImage = async () => {
+            const element = document.getElementById('ranking-card');
+            if (!element) return;
 
-        const App = () => {
-            const [rankings, setRankings] = useState(Array(10).fill(null));
-            const [selectedSlot, setSelectedSlot] = useState(0);
-            const [searchTerm, setSearchTerm] = useState("");
-            const [playingVideoId, setPlayingVideoId] = useState(null);
-            const playerRef = useRef(null);
+            try {
+                const canvas = await html2canvas(element, {
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#f8fafc',
+                    scale: 3, // 解像度を上げて見切れを防止
+                    logging: false,
+                    onclone: (clonedDoc) => {
+                        // 保存時だけ文字の下に余白を作る
+                        const target = clonedDoc.getElementById('ranking-card');
+                        if (target) {
+                            const texts = target.querySelectorAll('p');
+                            texts.forEach(p => {
+                                p.style.lineHeight = '1.8';
+                                p.style.paddingBottom = '4px';
+                            });
+                        }
+                    }
+                }); // ← ここで html2canvas のカッコを閉じる
+
+                const link = document.createElement('a');
+                link.download = `blue-archive-ranking-${new Date().getTime()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                console.error('保存に失敗しました:', err);
+                alert('画像の保存に失敗しました。');
+            }
+        };
 
             // YouTube Playerの初期化
             useEffect(() => {
