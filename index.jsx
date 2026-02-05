@@ -1,0 +1,688 @@
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Search, Trash2, Download, Music, MessageSquare, Trophy, Star, Medal } from 'lucide-react';
+
+// --- 外部スクリプトの動的読み込み (html2canvas) ---
+const loadScript = (src) => {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};
+
+const getPlaylist = () => {
+  if (typeof window !== 'undefined' && window.playlist) return window.playlist;
+  return [
+    { title: "Constant Moderato", videoId: "S3x9xVTaST8", composer: "Mitsukiyo", context: "OST 1", imageUrl: "https://i.ytimg.com/vi/S3x9xVTaST8/hqdefault.jpg" },
+  { title: "Luminous Memory", videoId: "X6-HDdn79zQ", composer: "Mitsukiyo", context: "OST 2\nメモロビ:イオリ、ウタハ、ハスミ、アズサ(水着)、ミネ", imageUrl: "https://i.ytimg.com/vi/X6-HDdn79zQ/hqdefault.jpg" },
+  { title: "Mischievous Step", videoId: "U3DH1L1FST8", composer: "Mitsukiyo", context: "OST 3", imageUrl: "https://i.ytimg.com/vi/U3DH1L1FST8/hqdefault.jpg" },
+  { title: "Lovely Picnic", videoId: "0HtUSeoDqeA", composer: "Mitsukiyo", similarGroup: 1, context: "OST 4", imageUrl: "https://i.ytimg.com/vi/0HtUSeoDqeA/hqdefault.jpg" },
+  { title: "Colorful Mess", videoId: "0K9a7h3NhEs", composer: "KARUT", context: "OST 5", imageUrl: "https://i.ytimg.com/vi/0K9a7h3NhEs/hqdefault.jpg" },
+  { title: "Funky Road", videoId: "hc6IdHKT8-s", composer: "KARUT", context: "OST 6", imageUrl: "https://i.ytimg.com/vi/hc6IdHKT8-s/hqdefault.jpg" },
+  { title: "Unwelcome School", videoId: "bhABIic1K44", composer: "Mitsukiyo", context: "OST 7", imageUrl: "https://i.ytimg.com/vi/bhABIic1K44/hqdefault.jpg" },
+  { title: "Shady Girls", videoId: "XX8MElHLKRI", composer: "Mitsukiyo", context: "OST 8\nメモロビ:カスミ", imageUrl: "https://i.ytimg.com/vi/XX8MElHLKRI/hqdefault.jpg" },
+  { title: "Midsummer Cat", videoId: "dJWjuckvI_g", composer: "Mitsukiyo", similarGroup: 10,context: "OST 9\nメモロビ:シロコ、セリカ(正月)、ノノミ、ヨシミ、アカネ、ハナコ、ツバキ、シズコ、ミモリ、シュン、ユウカ(体操服)、ハルナ(正月)、ジュリ、トキ(バニーガール)、ミヤコ(水着)、ハナコ(水着)、アカリ(正月)、ヤクモ", imageUrl: "https://i.ytimg.com/vi/dJWjuckvI_g/hqdefault.jpg" },
+  { title: "Romantic Smile", videoId: "xQZe_4UbLJI", composer: "Mitsukiyo", similarGroup: 1, context: "OST 10", imageUrl: "https://i.ytimg.com/vi/xQZe_4UbLJI/hqdefault.jpg" },
+  { title: "Connected Sky", videoId: "OlbS73AQ-A4", composer: "KARUT", context: "OST 11\nガチャ", imageUrl: "https://i.ytimg.com/vi/OlbS73AQ-A4/hqdefault.jpg" },
+  { title: "Shooting Stars", videoId: "c5D9mQ87SuQ", composer: "KARUT", context: "OST 12\nメモロビ:ホシノ、ノドカ", imageUrl: "https://i.ytimg.com/vi/c5D9mQ87SuQ/hqdefault.jpg" },
+  { title: "Barrier", videoId: "qwvEdxfzvUw", composer: "KARUT", context: "OST 13", imageUrl: "https://i.ytimg.com/vi/qwvEdxfzvUw/hqdefault.jpg" },
+  { title: "Step by Step", videoId: "5B5ceFA42sk", composer: "KARUT", context: "OST 14", imageUrl: "https://i.ytimg.com/vi/5B5ceFA42sk/hqdefault.jpg" },
+  { title: "Honey Jam", videoId: "MdmfTG-2SSE", composer: "Mitsukiyo", context: "OST 15", imageUrl: "https://i.ytimg.com/vi/MdmfTG-2SSE/hqdefault.jpg" },
+  { title: "MX Adventure", videoId: "MxcFmnTJHr4", composer: "Mitsukiyo", context: "OST 16", imageUrl: "https://i.ytimg.com/vi/MxcFmnTJHr4/hqdefault.jpg" },
+  { title: "Irasshaimase", videoId: "IauV6ZP6JG0", composer: "Mitsukiyo", context: "OST 17\nメモロビ:ユウカ、コトリ、キリノ、佐天涙子", imageUrl: "https://i.ytimg.com/vi/IauV6ZP6JG0/hqdefault.jpg" },
+  { title: "Mechanical JUNGLE", videoId: "PMZnE6wBwA8", composer: "KARUT", similarGroup: 6,context: "OST 18", imageUrl: "https://i.ytimg.com/vi/PMZnE6wBwA8/hqdefault.jpg" },
+  { title: "Virtual Storm", videoId: "8nmt3PnIu-k", composer: "KARUT", similarGroup: 9,similarGroup: 14,context: "OST 19", imageUrl: "https://i.ytimg.com/vi/8nmt3PnIu-k/hqdefault.jpg" },
+  { title: "Tech N Tech", videoId: "0-0nuC2w2kY", composer: "KARUT", similarGroup: 6,similarGroup: 22,context: "OST 20", imageUrl: "https://i.ytimg.com/vi/0-0nuC2w2kY/hqdefault.jpg" },
+  { title: "Midnight Trip", videoId: "g4neQ08dcBI", composer: "Nor", similarGroup: 10,context: "OST 21\nメモロビ:ヒナ、ヒナ(水着)、セナ、チナツ(温泉)、アツコ、カリン、ヒビキ、トモエ、スズミ、モエ、ミモリ(水着)、メル、アル(ドレス)、サオリ(ドレス)", imageUrl: "https://i.ytimg.com/vi/g4neQ08dcBI/hqdefault.jpg" },
+  { title: "Daily Routine 24/7", videoId: "Tm3eYmGg594", composer: "Nor", context: "OST 22\nメモロビ:ミカ", imageUrl: "https://i.ytimg.com/vi/Tm3eYmGg594/hqdefault.jpg" },
+  { title: "Party Time", videoId: "Z8CPxQ6P8G8", composer: "Mitsukiyo", context: "OST 23", imageUrl: "https://i.ytimg.com/vi/Z8CPxQ6P8G8/hqdefault.jpg" },
+  { title: "Endless Carnival", videoId: "DQbyXNZynX4", composer: "Mitsukiyo", context: "OST 24\n総力戦ビナー", imageUrl: "https://i.ytimg.com/vi/DQbyXNZynX4/hqdefault.jpg" },
+  { title: "Future Bossa", videoId: "pGAD5rq4218", composer: "Mitsukiyo", similarGroup: 17,context: "OST 25", imageUrl: "https://i.ytimg.com/vi/pGAD5rq4218/hqdefault.jpg" },
+  { title: "Lemonade Diary", videoId: "Yjp2m0W0iPY", composer: "Mitsukiyo", context: "OST 26", imageUrl: "https://i.ytimg.com/vi/Yjp2m0W0iPY/hqdefault.jpg" },
+  { title: "Fade Out", videoId: "YHShPeV2-UE", composer: "KARUT", context: "OST 27", imageUrl: "https://i.ytimg.com/vi/YHShPeV2-UE/hqdefault.jpg" },
+  { title: "Plug and Play", videoId: "KfyWYv1u4Bs", composer: "KARUT", context: "OST 28\nメモロビ:ムツキ", imageUrl: "https://i.ytimg.com/vi/KfyWYv1u4Bs/hqdefault.jpg" },
+  { title: "Alert", videoId: "_0B5-VSDFTo", composer: "KARUT", similarGroup: 9,context: "OST 29", imageUrl: "https://i.ytimg.com/vi/_0B5-VSDFTo/hqdefault.jpg" },
+  { title: "Crossfire", videoId: "39FyFdwftAY", composer: "KARUT", similarGroup: 6,similarGroup: 9,context: "OST 30", imageUrl: "https://i.ytimg.com/vi/39FyFdwftAY/hqdefault.jpg" },
+  { title: "Hello to Halo", videoId: "qlte0miBLzs", composer: "Nor", context: "OST 31", imageUrl: "https://i.ytimg.com/vi/qlte0miBLzs/hqdefault.jpg" },
+  { title: "GGF", videoId: "jLJiVGnfRIo", composer: "Nor", context: "OST 32", imageUrl: "https://i.ytimg.com/vi/jLJiVGnfRIo/hqdefault.jpg" },
+  { title: "Vivid Night", videoId: "v_aiQhYfve4", composer: "Nor", context: "OST 33", imageUrl: "https://i.ytimg.com/vi/v_aiQhYfve4/hqdefault.jpg" },
+  { title: "Aoharu", videoId: "VcMpBLdlSb8", composer: "Nor", context: "OST 34", imageUrl: "https://i.ytimg.com/vi/VcMpBLdlSb8/hqdefault.jpg" },
+  { title: "Morose Dreamer", videoId: "igmkZKMbAbE", composer: "Mitsukiyo", context: "OST 35", imageUrl: "https://i.ytimg.com/vi/igmkZKMbAbE/hqdefault.jpg" },
+  { title: "Koi is Love", videoId: "lzazTFOkVlM", composer: "Mitsukiyo", similarGroup: 15,context: "OST 36\nメモロビ:ハルナ、アカリ、ジュンコ、フウカ、マキ、ハレ、ネル(バニーガール)、エイミ、ミドリ、アイリ、アズサ、サヤ(私服)、ナツ、チェリノ(温泉)、フブキ、サキ、ココナ、ヒマリ、アリス(メイド)、モミジ、レンゲ", imageUrl: "https://i.ytimg.com/vi/lzazTFOkVlM/hqdefault.jpg" },
+  { title: "Aira", videoId: "uo4SRNFQGgw", composer: "Mitsukiyo", similarGroup: 8,context: "OST 37\nメモロビ:カヨコ、チヒロ、マリー、ヒナタ、ワカモ(水着)、チナツ、アカネ(バニーガール)、コタマ、キキョウ、コタマ(キャンプ)", imageUrl: "https://i.ytimg.com/vi/uo4SRNFQGgw/hqdefault.jpg" },
+  { title: "Guruguru Usagi", videoId: "o5vInwKCdAQ", composer: "Mitsukiyo", context: "OST 38\nメモロビ:アル、アコ、イズミ、ハナエ、コハル、サヤ、ヒヨリ、アスナ、ユズ(メイド)、ヒナタ(水着)", imageUrl: "https://i.ytimg.com/vi/o5vInwKCdAQ/hqdefault.jpg" },
+  { title: "Water Drop", videoId: "aZZ_ylEcGN0", composer: "KARUT", context: "OST 39\nメモロビ:シロコ(ライディング)、アヤネ、スミレ、マシロ、ミチル、ヒビキ(応援団)、ハルカ(正月)、ハルナ(体操服)、御坂美琴", imageUrl: "https://i.ytimg.com/vi/aZZ_ylEcGN0/hqdefault.jpg" },
+  { title: "Neo City Dive", videoId: "7oglXhV_494", composer: "KARUT", context: "OST 40", imageUrl: "https://i.ytimg.com/vi/7oglXhV_494/hqdefault.jpg" },
+  { title: "Interface", videoId: "WsBG1BaBreo", composer: "KARUT", context: "OST 41", imageUrl: "https://i.ytimg.com/vi/WsBG1BaBreo/hqdefault.jpg" },
+  { title: "Glitch Street", videoId: "_7NFlc7amDY", composer: "KARUT", context: "OST 42", imageUrl: "https://i.ytimg.com/vi/_7NFlc7amDY/hqdefault.jpg" },
+  { title: "KIRISAME", videoId: "BeHbczSIXF0", composer: "Nor", context: "OST 43\nメモロビ:ハルカ、セリナ、シズコ(水着)、フウカ(正月)、メグ", imageUrl: "https://i.ytimg.com/vi/BeHbczSIXF0/hqdefault.jpg" },
+  { title: "Walkthrough", videoId: "VHu6f37Zqf8", composer: "Nor", context: "OST 44\nメモロビ:イロハ、カンナ、ナギサ、カホ、ルミ、ミノリ", imageUrl: "https://i.ytimg.com/vi/VHu6f37Zqf8/hqdefault.jpg" },
+  { title: "Signal of Abydos", videoId: "3Q13WaqFD5k", composer: "Nor", context: "OST 45", imageUrl: "https://i.ytimg.com/vi/3Q13WaqFD5k/hqdefault.jpg" },
+  { title: "Sugar Story", videoId: "OyTozDBpJvw", composer: "Nor", context: "OST 46\nメモロビ:セリカ、ウイ、シュン(幼女)、ノノミ(水着)、イズナ(水着)、ノア", imageUrl: "https://i.ytimg.com/vi/OyTozDBpJvw/hqdefault.jpg" },
+  { title: "Coffee Cats", videoId: "a0DDKezIe0M", composer: "Mitsukiyo", context: "OST 47\nメモロビ:ツルギ", imageUrl: "https://i.ytimg.com/vi/a0DDKezIe0M/hqdefault.jpg" },
+  { title: "Out of Control", videoId: "if-dH0xkICc", composer: "KARUT", context: "OST 48\n総力戦ケセド", imageUrl: "https://i.ytimg.com/vi/if-dH0xkICc/hqdefault.jpg" },
+  { title: "Mechanical JUNGLE Hard Arrange", videoId: "W54yw0sxPRw", composer: "KARUT", similarGroup: 6,context: "OST 49", imageUrl: "https://i.ytimg.com/vi/W54yw0sxPRw/hqdefault.jpg" },
+  { title: "Hue", videoId: "_0hFFgmoBkA", composer: "KARUT", context: "OST 50\nメモロビ:ユズ、ユカリ、イブキ", imageUrl: "https://i.ytimg.com/vi/_0hFFgmoBkA/hqdefault.jpg" },
+  { title: "ARES", videoId: "taYYlPXvka4", composer: "Nor", context: "OST 51", imageUrl: "https://i.ytimg.com/vi/taYYlPXvka4/hqdefault.jpg" },
+  { title: "Vibes", videoId: "HPcoOpolniA", composer: "Nor", context: "OST 52", imageUrl: "https://i.ytimg.com/vi/HPcoOpolniA/hqdefault.jpg" },
+  { title: "Future Lab", videoId: "FsC9UI48cLw", composer: "Nor", similarGroup: 17,context: "OST 53\nメモロビ:ネル、ミヤコ", imageUrl: "https://i.ytimg.com/vi/FsC9UI48cLw/hqdefault.jpg" },
+  { title: "After The Beep", videoId: "PwY0rVxe6os", composer: "Nor", context: "OST 54\nメモロビ:モモイ", imageUrl: "https://i.ytimg.com/vi/PwY0rVxe6os/hqdefault.jpg" },
+  { title: "Moment", videoId: "ObEgsAbBx6w", composer: "Nor", similarGroup: 8,context: "OST 55", imageUrl: "https://i.ytimg.com/vi/ObEgsAbBx6w/hqdefault.jpg" },
+  { title: "Fearful Utopia", videoId: "QWHtNNjRz5I", composer: "Nor", context: "OST 56\n総力戦シロクロ", imageUrl: "https://i.ytimg.com/vi/QWHtNNjRz5I/hqdefault.jpg" },
+  { title: "Han-nari", videoId: "hO-F-QnAirI", composer: "Nor", context: "OST 57\nメモロビ:フィーナ、イズナ", imageUrl: "https://i.ytimg.com/vi/hO-F-QnAirI/hqdefault.jpg" },
+  { title: "SAKURA PUNCH", videoId: "H-q250etK5Y", composer: "Nor", similarGroup: 18,context: "OST 58", imageUrl: "https://i.ytimg.com/vi/lvHt8YXv_gc/hqdefault.jpg" },
+  { title: "RE Aoharu", videoId: "Q7ND_1u2mcM", composer: "Nor", context: "OST 59", imageUrl: "https://i.ytimg.com/vi/Q7ND_1u2mcM/hqdefault.jpg" },
+  { title: "SAKURA PUNCH Hard Arrange", videoId: "yxu_FJBICaA", composer: "Nor", similarGroup: 18,context: "OST 60", imageUrl: "https://i.ytimg.com/vi/yxu_FJBICaA/hqdefault.jpg" },
+  { title: "Rolling Beat", videoId: "HgY9hnV5_tU", composer: "Mitsukiyo", context: "OST 61", imageUrl: "https://i.ytimg.com/vi/HgY9hnV5_tU/hqdefault.jpg" },
+  { title: "merry blue", videoId: "iRFi8vIoO0o", composer: "Mitsukiyo", similarGroup: 21,context: "OST 62\nメモロビ:チェリノ、ハナエ(クリスマス)", imageUrl: "https://i.ytimg.com/vi/iRFi8vIoO0o/hqdefault.jpg" },
+  { title: "Blooming Moon", videoId: "rIW9-SALzog", composer: "Mitsukiyo", context: "OST 63\nメモロビ:チセ、カエデ", imageUrl: "https://i.ytimg.com/vi/rIW9-SALzog/hqdefault.jpg" },
+  { title: "Pixel Time", videoId: "nPK63wdxQn4", composer: "Mitsukiyo", context: "OST 64", imageUrl: "https://i.ytimg.com/vi/nPK63wdxQn4/hqdefault.jpg" },
+  { title: "Accelerator", videoId: "pSN8AHnr-7I", composer: "KARUT", context: "OST 65", imageUrl: "https://i.ytimg.com/vi/pSN8AHnr-7I/hqdefault.jpg" },
+  { title: "Golden Shangri-la", videoId: "y1-_1Pb0PrE", composer: "KARUT", context: "OST 66", imageUrl: "https://i.ytimg.com/vi/y1-_1Pb0PrE/hqdefault.jpg" },
+  { title: "someday, sometime", videoId: "cus5-ZKkWR0", composer: "KARUT", context: "OST 67\nメモロビ:アリス、カヨコ(正月)、レイサ", imageUrl: "https://i.ytimg.com/vi/cus5-ZKkWR0/hqdefault.jpg" },
+  { title: "Virtual Storm Hard Arrange", videoId: "c9XnoB5Elqo", composer: "Mitsukiyo", similarGroup: 14,context: "OST 68", imageUrl: "https://i.ytimg.com/vi/c9XnoB5Elqo/hqdefault.jpg" },
+  { title: "Snow Pantomime", videoId: "aicpURP3ERA", composer: "Mitsukiyo", context: "OST 69", imageUrl: "https://i.ytimg.com/vi/aicpURP3ERA/hqdefault.jpg" },
+  { title: "Black Suit", videoId: "b7o7DxcEeG0", composer: "KARUT", context: "OST 70", imageUrl: "https://i.ytimg.com/vi/b7o7DxcEeG0/hqdefault.jpg" },
+  { title: "Denshi Toujou!", videoId: "Iy1PPC3Nb04", composer: "KARUT", similarGroup: 7,context: "OST 71", imageUrl: "https://i.ytimg.com/vi/Iy1PPC3Nb04/hqdefault.jpg" },
+  { title: "Kaiten Screw!!!", videoId: "ZjaG0q4PQXM", composer: "KARUT", similarGroup: 7,context: "OST 72\n総力戦KAITEN FX Mk.0", imageUrl: "https://i.ytimg.com/vi/ZjaG0q4PQXM/hqdefault.jpg" },
+  { title: "Interface Hard Arrange", videoId: "d15ZpQOK4iE", composer: "Mitsukiyo", similarGroup: 2,context: "OST 73", imageUrl: "https://i.ytimg.com/vi/d15ZpQOK4iE/hqdefault.jpg" },
+  { title: "Tech N Tech Hard Arrange", videoId: "Tjrcd1s6TfE", composer: "KARUT", similarGroup: 2, context: "OST 74", imageUrl: "https://i.ytimg.com/vi/Tjrcd1s6TfE/hqdefault.jpg" },
+  { title: "Alert Hard Arrange", videoId: "G4yZ4HkAKkg", composer: "KARUT", context: "OST 75", imageUrl: "https://i.ytimg.com/vi/G4yZ4HkAKkg/hqdefault.jpg" },
+  { title: "CrossFire Hard Arrange", videoId: "ylNOiqxtkmI", composer: "KARUT", similarGroup: 2, context: "OST 76", imageUrl: "https://i.ytimg.com/vi/ylNOiqxtkmI/hqdefault.jpg" },
+  { title: "Burning Love", videoId: "NIXVrwm4SA0", composer: "Mitsukiyo", context: "OST 77\nメモロビ:ワカモ", imageUrl: "https://i.ytimg.com/vi/NIXVrwm4SA0/hqdefault.jpg" },
+  { title: "Fevertime", videoId: "7kVh5kurcfU", composer: "KARUT", similarGroup: 7,context: "OST 78\n総力戦KAITEN FX Mk.0", imageUrl: "https://i.ytimg.com/vi/7kVh5kurcfU/hqdefault.jpg" },
+  { title: "Summer Bounce", videoId: "3FU0Aco4XjY", composer: "Mitsukiyo", similarGroup: 13,context: "OST 79", imageUrl: "https://i.ytimg.com/vi/3FU0Aco4XjY/hqdefault.jpg" },
+  { title: "Colorful Beach", videoId: "lSLD3MuGf5w", composer: "Mitsukiyo", context: "OST 80\nメモロビ:ツルギ(水着)、マシロ(水着)、ヒフミ(水着)", imageUrl: "https://i.ytimg.com/vi/lSLD3MuGf5w/hqdefault.jpg" },
+  { title: "Summer Bounce Hard Arrange", videoId: "El-t0XBpqnk", composer: "KARUT", similarGroup: 13,context: "OST 81", imageUrl: "https://i.ytimg.com/vi/El-t0XBpqnk/hqdefault.jpg" },
+  { title: "Hifumi Daisuki", videoId: "ob6dStFRIYk", composer: "Mitsukiyo", context: "OST 82\nメモロビ:ヒフミ", imageUrl: "https://i.ytimg.com/vi/ob6dStFRIYk/hqdefault.jpg" },
+  { title: "PRST Academy", videoId: "YUXJOI1Nets", composer: "Mitsukiyo", similarGroup: 5, context: "OST 83", imageUrl: "https://i.ytimg.com/vi/YUXJOI1Nets/hqdefault.jpg" },
+  { title: "PRST Marching", videoId: "t0hHODLMGJE", composer: "Mitsukiyo", similarGroup: 5, context: "OST 84", imageUrl: "https://i.ytimg.com/vi/t0hHODLMGJE/hqdefault.jpg" },
+  { title: "Library of Omen", videoId: "XzxoxXVTu48", composer: "KARUT", similarGroup: 12,context: "OST 85\n総力戦ヒエロニムス", imageUrl: "https://i.ytimg.com/vi/XzxoxXVTu48/hqdefault.jpg" },
+  { title: "Summertime Archive", videoId: "IP9iiWJSLMs", composer: "Mitsukiyo", context: "OST 86\nメモロビ:イオリ(水着)、イズミ(水着)", imageUrl: "https://i.ytimg.com/vi/IP9iiWJSLMs/hqdefault.jpg" },
+  { title: "Constant Moderato Piano Arrange", videoId: "IJzP3QmqwsQ", composer: "Mitsukiyo", context: "OST 87", imageUrl: "https://i.ytimg.com/vi/IJzP3QmqwsQ/hqdefault.jpg" },
+  { title: "Oriental Drop", videoId: "NY-XaqkhgQA", composer: "KARUT", similarGroup: 20,context: "OST 88", imageUrl: "https://i.ytimg.com/vi/NY-XaqkhgQA/hqdefault.jpg" },
+  { title: "The Dragon Express", videoId: "M3TI7ywh41s", composer: "KARUT", context: "OST 89", imageUrl: "https://i.ytimg.com/vi/M3TI7ywh41s/hqdefault.jpg" },
+  { title: "FEEEEVER TIME", videoId: "5a2GqSQga80", composer: "Nor", context: "OST 91", imageUrl: "https://i.ytimg.com/vi/5a2GqSQga80/hqdefault.jpg" },
+  { title: "Crucial Issue", videoId: "ctjFzlJb-x4", composer: "Nor", context: "OST 92", imageUrl: "https://i.ytimg.com/vi/ctjFzlJb-x4/hqdefault.jpg" },
+  { title: "Formless Dream", videoId: "cz1vv2jgmpQ", composer: "Mitsukiyo", similarGroup: 19,context: "OST 93", imageUrl: "https://i.ytimg.com/vi/cz1vv2jgmpQ/hqdefault.jpg" },
+  { title: "Bunny Bunny Carrot Carrot", videoId: "CqurduOfNAo", composer: "Mitsukiyo", context: "OST 94\nメモロビ:カリン(バニーガール)、アスナ(バニーガール)", imageUrl: "https://i.ytimg.com/vi/CqurduOfNAo/hqdefault.jpg" },
+  { title: "JACKPOT 777", videoId: "pYRu38DInwM", composer: "KARUT", context: "OST 95", imageUrl: "https://i.ytimg.com/vi/pYRu38DInwM/hqdefault.jpg" },
+  { title: "OperationD", videoId: "CURM2TqU418", composer: "Nor", context: "OST 96", imageUrl: "https://i.ytimg.com/vi/CURM2TqU418/hqdefault.jpg" },
+  { title: "Blue New Year", videoId: "-zBJ4RfT8ls", composer: "Nor", similarGroup: 4, context: "OST 97\nメモロビ:アル(正月)、ムツキ(正月)", imageUrl: "https://i.ytimg.com/vi/-zBJ4RfT8ls/hqdefault.jpg" },
+  { title: "Oxygen Destroyer", videoId: "6C5IzGizX_g", composer: "KARUT", context: "OST 98\n総力戦ペロロジラ", imageUrl: "https://i.ytimg.com/vi/6C5IzGizX_g/hqdefault.jpg" },
+  { title: "Nesno wons", videoId: "Gh4ClDHJzC0", composer: "Mitsukiyo", context: "OST 99", imageUrl: "https://i.ytimg.com/vi/Gh4ClDHJzC0/hqdefault.jpg" },
+  { title: "Undefined Behavior", videoId: "NoeKu3BiXQU", composer: "KARUT", context: "OST 100\n総力戦ホド", imageUrl: "https://i.ytimg.com/vi/NoeKu3BiXQU/hqdefault.jpg" },
+  { title: "NRG FielD", videoId: "Unek5xh76Y4", composer: "KARUT", similarGroup: 22,context: "OST 101", imageUrl: "https://i.ytimg.com/vi/Unek5xh76Y4/hqdefault.jpg" },
+  { title: "GIVE ME CHOCO♡", videoId: "1-wQr0egR7k", composer: "Nor", context: "OST 102", imageUrl: "https://i.ytimg.com/vi/1-wQr0egR7k/hqdefault.jpg" },
+  { title: "Poppin' Memories", videoId: "d-xNeTxC2tU", composer: "KARUT", context: "OST 103\nメモロビ:マリナ、ツクヨ、チセ(水着)、カズサ、トキ、コトリ(応援団)、食蜂操祈、エイミ(水着)、アコ(ドレス)、ツクヨ(ドレス)", imageUrl: "https://i.ytimg.com/vi/d-xNeTxC2tU/hqdefault.jpg" },
+  { title: "Cotton Candy Island", videoId: "gMIKfVxxHGk", composer: "Mitsukiyo", context: "OST 104\nメモロビ:ミユ、ハスミ(体操服)、コユキ、ミユ(水着)、ラブ", imageUrl: "https://i.ytimg.com/vi/gMIKfVxxHGk/hqdefault.jpg" },
+  { title: "Alkaline Tears", videoId: "-b6gQyz2RfE", composer: "Mitsukiyo", context: "OST 105\nメモロビ:サオリ、ミサキ、サクラコ", imageUrl: "https://i.ytimg.com/vi/-b6gQyz2RfE/hqdefault.jpg" },
+  { title: "Blue New Battle", videoId: "PpzjzIOuNAs", composer: "Mitsukiyo", similarGroup: 4, context: "OST 106", imageUrl: "https://i.ytimg.com/vi/PpzjzIOuNAs/hqdefault.jpg" },
+  { title: "NERINERI CHALLENGE", videoId: "22wDoQ3Y-so", composer: "Nor", context: "OST 107", imageUrl: "https://i.ytimg.com/vi/22wDoQ3Y-so/hqdefault.jpg" },
+  { title: "Starting Pistol", videoId: "KKbJ62ORZQQ", composer: "KARUT", context: "OST 108", imageUrl: "https://i.ytimg.com/vi/KKbJ62ORZQQ/hqdefault.jpg" },
+  { title: "Dolce Biblioteca", videoId: "vdw5JKVssMM", composer: "Mitsukiyo", context: "OST 109\nメモロビ:シミコ、マリー(体操服)", imageUrl: "https://i.ytimg.com/vi/vdw5JKVssMM/hqdefault.jpg" },
+  { title: "Codex of Omen", videoId: "1pv6u9MNzxQ", composer: "KARUT", similarGroup: 12,context: "OST 110", imageUrl: "https://i.ytimg.com/vi/1pv6u9MNzxQ/hqdefault.jpg" },
+  { title: "Usagi Flap", videoId: "Gpqcp-QKrYU", composer: "Nor", context: "OST 113", imageUrl: "https://i.ytimg.com/vi/Gpqcp-QKrYU/hqdefault.jpg" },
+  { title: "Unwelcome Guest", videoId: "0JWAtaPzEBo", composer: "Mitsukiyo", context: "OST 114", imageUrl: "https://i.ytimg.com/vi/0JWAtaPzEBo/hqdefault.jpg" },
+  { title: "Fall into the rabbit hole", videoId: "NZyspyLoL0k", composer: "KARUT", context: "OST 115", imageUrl: "https://i.ytimg.com/vi/NZyspyLoL0k/hqdefault.jpg" },
+  { title: "IROHANI HOP", videoId: "VG7BF7QzVJQ", composer: "Nor", context: "OST 116", imageUrl: "https://i.ytimg.com/vi/VG7BF7QzVJQ/hqdefault.jpg" },
+  { title: "KARAKURhythm", videoId: "-g7b3oY3jww", composer: "Nor", context: "OST 117", imageUrl: "https://i.ytimg.com/vi/-g7b3oY3jww/hqdefault.jpg" },
+  { title: "Agnus Dei", videoId: "1j3LIaTAQXE", composer: "KARUT", context: "OST 118", imageUrl: "https://i.ytimg.com/vi/1j3LIaTAQXE/hqdefault.jpg" },
+  { title: "Blood Stained Faith", videoId: "sGpuJPDheSM", composer: "KARUT", context: "OST 119", imageUrl: "https://i.ytimg.com/vi/sGpuJPDheSM/hqdefault.jpg" },
+  { title: "Dive into Summer", videoId: "rIHXiUF1gWE", composer: "Mitsukiyo", context: "OST 120\nメモロビ:ホシノ(水着)、シロコ(水着)", imageUrl: "https://i.ytimg.com/vi/rIHXiUF1gWE/hqdefault.jpg" },
+  { title: "Na Na Natsu!", videoId: "JcDXAHFmD8A", composer: "Nor", similarGroup: 24,context: "OST 121\nメモロビ:アヤネ(水着)\n総力戦ホバークラフト", imageUrl: "https://i.ytimg.com/vi/JcDXAHFmD8A/hqdefault.jpg" },
+  { title: "Underwater Jungle", videoId: "d8dIyfIGLQM", composer: "Nor", context: "OST 122", imageUrl: "https://i.ytimg.com/vi/d8dIyfIGLQM/hqdefault.jpg" },
+  { title: "Luxury Cool", videoId: "ZtZ2Q-mM7Kc", composer: "Nor", context: "OST 123", imageUrl: "https://i.ytimg.com/vi/ZtZ2Q-mM7Kc/hqdefault.jpg" },
+  { title: "TOMODACHI SUMMER", videoId: "AvksnKrgW7c", composer: "Mitsukiyo", similarGroup: 24,context: "OST 124", imageUrl: "https://i.ytimg.com/vi/AvksnKrgW7c/hqdefault.jpg" },
+  { title: "Kaphar", videoId: "tpIjOhbeE2Y", composer: "Mitsukiyo", similarGroup: 3, context: "OST 125", imageUrl: "https://i.ytimg.com/vi/tpIjOhbeE2Y/hqdefault.jpg" },
+  { title: "Wave & Conquer", videoId: "jsgn4x7FY48", composer: "KARUT", context: "OST 127", imageUrl: "https://i.ytimg.com/vi/jsgn4x7FY48/hqdefault.jpg" },
+  { title: "After School Dessert", videoId: "G9jRG-_hgVI", composer: "KARUT", context: "OST 128", imageUrl: "https://i.ytimg.com/vi/G9jRG-_hgVI/hqdefault.jpg" },
+  { title: "Let me think about it", videoId: "spArmrXHZXw", composer: "KARUT", context: "OST 129", imageUrl: "https://i.ytimg.com/vi/spArmrXHZXw/hqdefault.jpg" },
+  { title: "Foolish Days", videoId: "KWp1mEi_uNI", composer: "KARUT", context: "OST 130", imageUrl: "https://i.ytimg.com/vi/KWp1mEi_uNI/hqdefault.jpg" },
+  { title: "Shooting Athletes", videoId: "UFLwfVnhJoM", composer: "KARUT", context: "OST 131\nメモロビ:ウタハ(応援団)", imageUrl: "https://i.ytimg.com/vi/UFLwfVnhJoM/hqdefault.jpg" },
+  { title: "Raise the Huddle", videoId: "9l83fp6rs5s", composer: "Nor", context: "OST 132", imageUrl: "https://i.ytimg.com/vi/9l83fp6rs5s/hqdefault.jpg" },
+  { title: "Goal Wo Nerae!", videoId: "UV_FMPjjrNg", composer: "KARUT", context: "OST 133", imageUrl: "https://i.ytimg.com/vi/UV_FMPjjrNg/hqdefault.jpg" },
+  { title: "Gestalt Angst", videoId: "UOJ9tLpCykU", composer: "Mitsukiyo", context: "OST 134", imageUrl: "https://i.ytimg.com/vi/UOJ9tLpCykU/hqdefault.jpg" },
+  { title: "Fruitful Blossom", videoId: "N_cE1mmkxjQ", composer: "Mitsukiyo", context: "OST 135\nメモロビ:シグレ、シグレ(温泉)、カヨコ(ドレス)、キサキ、イチカ(水着)", imageUrl: "https://i.ytimg.com/vi/N_cE1mmkxjQ/hqdefault.jpg" },
+  { title: "Kyrie Eleison", videoId: "OsUPK7wSYRE", composer: "Mitsukiyo", similarGroup: 3, context: "OST 136", imageUrl: "https://i.ytimg.com/vi/OsUPK7wSYRE/hqdefault.jpg" },
+  { title: "OST 137", videoId: "7aYKI6yaQpE", composer: "Nor", context: "OST 137", quiz: false, imageUrl: "https://i.ytimg.com/vi/7aYKI6yaQpE/hqdefault.jpg" },
+  { title: "Utaha No Uta", videoId: "--aG2j6iZCA", composer: "KARUT", context: "OST 138", imageUrl: "https://i.ytimg.com/vi/--aG2j6iZCA/hqdefault.jpg" },
+  { title: "Cherry Berry Merry", videoId: "QSLrOjnh61o", composer: "Mitsukiyo", similarGroup: 21,context: "OST 139\nメモロビ:セリナ(クリスマス)", imageUrl: "https://i.ytimg.com/vi/QSLrOjnh61o/hqdefault.jpg" },
+  { title: "Defective Pixel", videoId: "j0lhxnFX7uo", composer: "Mitsukiyo", context: "OST 140", imageUrl: "https://i.ytimg.com/vi/j0lhxnFX7uo/hqdefault.jpg" },
+  { title: "Tasty New Year", videoId: "MjHN1WxDSyo", composer: "Nor", context: "OST 141\nメモロビ:ジュンコ(正月)、イズミ(正月)", imageUrl: "https://i.ytimg.com/vi/MjHN1WxDSyo/hqdefault.jpg" },
+  { title: "Encroached Sky", videoId: "7bKEH6vJACw", composer: "KARUT", context: "OST 142", imageUrl: "https://i.ytimg.com/vi/7bKEH6vJACw/hqdefault.jpg" },
+  { title: "!⸮ WAS IT A CAT I SAW ?!", videoId: "I73Mx3VGFTA", composer: "KARUT", context: "OST 143\n総力戦ゴズ", imageUrl: "https://i.ytimg.com/vi/I73Mx3VGFTA/hqdefault.jpg" },
+  { title: "Hinagesi", videoId: "L8zK00QIccQ", composer: "Nor", context: "OST 145", imageUrl: "https://i.ytimg.com/vi/L8zK00QIccQ/hqdefault.jpg" },
+  { title: "Polyphonic", videoId: "AXQ-GUY7bUI", composer: "Nor", context: "OST 148", imageUrl: "https://i.ytimg.com/vi/AXQ-GUY7bUI/hqdefault.jpg" },
+  { title: "Ark in the Blood Sky", videoId: "xoCKr73UUWk", composer: "KARUT", context: "OST 149", imageUrl: "https://i.ytimg.com/vi/xoCKr73UUWk/hqdefault.jpg" },
+  { title: "System All Green", videoId: "PRz3zJj61jU", composer: "KARUT", context: "OST 150", imageUrl: "https://i.ytimg.com/vi/PRz3zJj61jU/hqdefault.jpg" },
+  { title: "Kaiten Hurricane!!!", videoId: "J5aehIx9RoA", composer: "KARUT", similarGroup: 7,context: "OST 151", imageUrl: "https://i.ytimg.com/vi/J5aehIx9RoA/hqdefault.jpg" },
+  { title: "Aoharu Band Arrange", videoId: "B_anqO2La14", composer: "Mitsukiyo", context: "OST 152", imageUrl: "https://i.ytimg.com/vi/B_anqO2La14/hqdefault.jpg" },
+  { title: "OST 153", videoId: "aZJgzb7AC24", composer: "Mitsukiyo", context: "OST 153", quiz: false, imageUrl: "https://i.ytimg.com/vi/aZJgzb7AC24/hqdefault.jpg" },
+  { title: "Responsibility", videoId: "cjTGkUmB5aQ", composer: "Nor", context: "OST 155", imageUrl: "https://i.ytimg.com/vi/cjTGkUmB5aQ/hqdefault.jpg" },
+  { title: "Final Destination of Ark", videoId: "ggZG9BCC2E4", composer: "KARUT", context: "OST 156", imageUrl: "https://i.ytimg.com/vi/ggZG9BCC2E4/hqdefault.jpg" },
+  { title: "Step of Terror", videoId: "HoTNq1kTVgg", composer: "KARUT", context: "OST 157", imageUrl: "https://i.ytimg.com/vi/HoTNq1kTVgg/hqdefault.jpg" },
+  { title: "Gregorius Symphony", videoId: "Lq3Ko0aYlHQ", composer: "Mitsukiyo", context: "OST 158\n総力戦グレゴリオ", imageUrl: "https://i.ytimg.com/vi/Lq3Ko0aYlHQ/hqdefault.jpg" },
+  { title: "Operation☆DOTABATA!", videoId: "EaLpGmbTmzI", composer: "Mitsukiyo", context: "OST 159", imageUrl: "https://i.ytimg.com/vi/EaLpGmbTmzI/hqdefault.jpg" },
+  { title: "Noble Hallway", videoId: "log2lLv_xIo", composer: "Nor", context: "OST 160", imageUrl: "https://i.ytimg.com/vi/log2lLv_xIo/hqdefault.jpg" },
+  { title: "Oriental Bounce", videoId: "BpP3Z0QD2yI", composer: "KARUT", similarGroup: 20,context: "OST 161", imageUrl: "https://i.ytimg.com/vi/BpP3Z0QD2yI/hqdefault.jpg" },
+  { title: "Welcome School", videoId: "_NfTyK4hai8", composer: "Mitsukiyo", context: "OST 162", imageUrl: "https://i.ytimg.com/vi/_NfTyK4hai8/hqdefault.jpg" },
+  { title: "Trigger For Ambition", videoId: "PL94YQaEhBE", composer: "KARUT", similarGroup: 19,context: "OST 163", imageUrl: "https://i.ytimg.com/vi/PL94YQaEhBE/hqdefault.jpg" },
+  { title: "Kitsunebi", videoId: "o-iJBoByIuQ", composer: "KARUT", context: "OST 164", imageUrl: "https://i.ytimg.com/vi/o-iJBoByIuQ/hqdefault.jpg" },
+  { title: "Up to 21°C", videoId: "fn26CAyLZoU", composer: "Nor", context: "OST 165\nメモロビ:サキ(水着)", imageUrl: "https://i.ytimg.com/vi/fn26CAyLZoU/hqdefault.jpg" },
+  { title: "Hidden Treasure", videoId: "B0ojmf6YBLc", composer: "Mitsukiyo", similarGroup: 11,context: "OST 167", imageUrl: "https://i.ytimg.com/vi/B0ojmf6YBLc/hqdefault.jpg" },
+  { title: "Hunter Bible", videoId: "Rmdqg0aygO4", composer: "Nor", context: "OST 168", imageUrl: "https://i.ytimg.com/vi/Rmdqg0aygO4/hqdefault.jpg" },
+  { title: "OTKPARA!", videoId: "cee6j3dKRF4", composer: "KARUT", context: "OST 169", imageUrl: "https://i.ytimg.com/vi/cee6j3dKRF4/hqdefault.jpg" },
+  { title: "Container Corner", videoId: "X6E8Lt4OR7Q", composer: "Nor", context: "OST 170", imageUrl: "https://i.ytimg.com/vi/X6E8Lt4OR7Q/hqdefault.jpg" },
+  { title: "Rendezvous", videoId: "ZFh-a7P7HDY", composer: "KARUT", context: "OST 171\nメモロビ:ミナ", imageUrl: "https://i.ytimg.com/vi/ZFh-a7P7HDY/hqdefault.jpg" },
+  { title: "Rendezvous Recorder ver", videoId: "GicUj-jQ72s", composer: "KARUT", context: "OST 172", imageUrl: "https://i.ytimg.com/vi/GicUj-jQ72s/hqdefault.jpg" },
+  { title: "Takaramonogatari", videoId: "4CvfiJnSp4E", composer: "Mitsukiyo", context: "OST 173\nメモロビ:ウイ(水着)、コハル(水着)", imageUrl: "https://i.ytimg.com/vi/4CvfiJnSp4E/hqdefault.jpg" },
+  { title: "Tok9 Train", videoId: "YmRnn1uVWwU", composer: "Nor", similarGroup: 11,context: "OST 174", imageUrl: "https://i.ytimg.com/vi/YmRnn1uVWwU/hqdefault.jpg" },
+  { title: "HIGH-VELOCITY", videoId: "yuB9WoxB54o", composer: "Aiobahn", context: "OST 175", imageUrl: "https://i.ytimg.com/vi/yuB9WoxB54o/hqdefault.jpg" },
+  { title: "Illuminated Night", videoId: "qvng2qL3weo", composer: "KARUT", similarGroup: 16,context: "OST 176", imageUrl: "https://i.ytimg.com/vi/qvng2qL3weo/hqdefault.jpg" },
+  { title: "Illuminated Night Hard Arrange", videoId: "HfKPQUdj-tc", composer: "KARUT", context: "OST 177", imageUrl: "https://i.ytimg.com/vi/HfKPQUdj-tc/hqdefault.jpg" },
+  { title: "Tsukikage", videoId: "-00EnoL9lwA", composer: "Nor", similarGroup: 16,context: "OST 178", imageUrl: "https://i.ytimg.com/vi/-00EnoL9lwA/hqdefault.jpg" },
+  { title: "夢路の花", videoId: "y3Yl6AbMq5c", composer: "Mitsukiyo", context: "OST 179\nメモロビ:ヒナ(ドレス)", quiz: false, imageUrl: "https://i.ytimg.com/vi/y3Yl6AbMq5c/hqdefault.jpg" },
+  { title: "彩りキャンバス", videoId: "w5WvFaxj2sg", composer: "Mitsukiyo", context: "OST 180", quiz: false, imageUrl: "https://i.ytimg.com/vi/w5WvFaxj2sg/hqdefault.jpg" },
+  { title: "Dark Shadows", videoId: "BMWiTmVPhSU", composer: "KARUT", context: "OST 181\n総力戦クロカゲ", imageUrl: "https://i.ytimg.com/vi/BMWiTmVPhSU/hqdefault.jpg" },
+  { title: "PACHAD", videoId: "z5ulxk3JF7w", composer: "Nor", context: "OST 182\n総力戦ゲブラ", imageUrl: "https://i.ytimg.com/vi/z5ulxk3JF7w/hqdefault.jpg" },
+  { title: "Indoor Outdoor", videoId: "fpsdi18_KFU", composer: "Nor", context: "OST 183", imageUrl: "https://i.ytimg.com/vi/fpsdi18_KFU/hqdefault.jpg" },
+  { title: "Starry Night", videoId: "zywVYPs09iA", composer: "Mitsukiyo", context: "OST 186\nメモロビ:モエ(水着)", imageUrl: "https://i.ytimg.com/vi/zywVYPs09iA/hqdefault.jpg" },
+  { title: "Action 68", videoId: "v6A8uwee4tA", composer: "KARUT", context: "OST 187", imageUrl: "https://i.ytimg.com/vi/v6A8uwee4tA/hqdefault.jpg" },
+  { title: "Dreaming Trip", videoId: "o8zc2fjDFT0", composer: "EmoCosine", context: "OST 188", imageUrl: "https://i.ytimg.com/vi/o8zc2fjDFT0/hqdefault.jpg" },
+  { title: "Bluemark Canvas", videoId: "s4uRO10wo58", composer: "Mitsukiyo", context: "OST 189", imageUrl: "https://i.ytimg.com/vi/s4uRO10wo58/hqdefault.jpg" },
+  { title: "Dancing Falsehood", videoId: "H_wXy21aqfk", composer: "Mitsukiyo", context: "OST 190\nメモロビ:ナグサ", imageUrl: "https://i.ytimg.com/vi/H_wXy21aqfk/hqdefault.jpg" },
+  { title: "F1ghtback", videoId: "xJwg9CZ2GFQ", composer: "KARUT", context: "OST 191", imageUrl: "https://i.ytimg.com/vi/xJwg9CZ2GFQ/hqdefault.jpg" },
+  { title: "Chilling Out", videoId: "L1vSRf2CEUI", composer: "Nor", context: "OST 192\nメモロビ:イチカ、トモエ(チーパオ)、サツキ、ニヤ", imageUrl: "https://i.ytimg.com/vi/L1vSRf2CEUI/hqdefault.jpg" },
+  { title: "Starry Confession", videoId: "JJOuL-DrFOM", composer: "Synthion", context: "OST 193\nメモロビ:ハレ(キャンプ)", imageUrl: "https://i.ytimg.com/vi/JJOuL-DrFOM/hqdefault.jpg" },
+  { title: "Ridiculous", videoId: "Y5cEjd83brQ", composer: "7mai", context: "OST 194", imageUrl: "https://i.ytimg.com/vi/Y5cEjd83brQ/hqdefault.jpg" },
+  { title: "Nichirin", videoId: "r5l2YANNCgM", composer: "Nor", similarGroup: 16,context: "OST 195", imageUrl: "https://i.ytimg.com/vi/r5l2YANNCgM/hqdefault.jpg" },
+  { title: "Getsurin", videoId: "Qcpf1xR8xkM", composer: "Nor", similarGroup: 16,context: "OST 196", imageUrl: "https://i.ytimg.com/vi/Qcpf1xR8xkM/hqdefault.jpg" },
+  { title: "SHANHAIJING Tragicomedy", videoId: "956T-16IX-Y", composer: "KARUT", context: "OST 197", imageUrl: "https://i.ytimg.com/vi/956T-16IX-Y/hqdefault.jpg" },
+  { title: "It Takes Two To Tiramisu", videoId: "W3l-yxJYV48", composer: "Airuei", context: "OST 198", imageUrl: "https://i.ytimg.com/vi/W3l-yxJYV48/hqdefault.jpg" },
+  { title: "Yumeji Party", videoId: "4Uo6R5mGSOU", composer: "Mitsukiyo", context: "OST 199\nメモロビ:マコト", imageUrl: "https://i.ytimg.com/vi/4Uo6R5mGSOU/hqdefault.jpg" },
+  { title: "Serene Scenario", videoId: "u1loKxLbP5Q", composer: "Mitsukiyo", context: "OST 201", imageUrl: "https://i.ytimg.com/vi/u1loKxLbP5Q/hqdefault.jpg" },
+  { title: "Metal † Crisis", videoId: "QI1a6FUNJNs", composer: "KARUT", context: "OST 202", imageUrl: "https://i.ytimg.com/vi/QI1a6FUNJNs/hqdefault.jpg" },
+  { title: "Realm Rumble", videoId: "98CPUmAg0lw", composer: "Mitsukiyo", similarGroup: 19,context: "OST 203", imageUrl: "https://i.ytimg.com/vi/98CPUmAg0lw/hqdefault.jpg" },
+  { title: "Ramune Lagoon", videoId: "klo6hX_fkVY", composer: "YUC'e", similarGroup: 24,context: "OST 204", imageUrl: "https://i.ytimg.com/vi/klo6hX_fkVY/hqdefault.jpg" },
+  { title: "Summer Attack!", videoId: "oGY6m8zvhWE", composer: "EmoCosine", similarGroup: 24,context: "OST 205", imageUrl: "https://i.ytimg.com/vi/oGY6m8zvhWE/hqdefault.jpg" },
+  { title: "Let me go Seaside", videoId: "4LZAHfBBMKo", composer: "KARUT", context: "OST 206", imageUrl: "https://i.ytimg.com/vi/4LZAHfBBMKo/hqdefault.jpg" },
+  { title: "HIGH5LANDER", videoId: "7hUfZSSe0jk", composer: "Nor", context: "OST 207", imageUrl: "https://i.ytimg.com/vi/7hUfZSSe0jk/hqdefault.jpg" },
+  { title: "Shoujo Delight", videoId: "1w-whKI604U", composer: "Mitsukiyo", context: "OST 208", imageUrl: "https://i.ytimg.com/vi/1w-whKI604U/hqdefault.jpg" },
+  { title: "Sometimes I Cry", videoId: "8uXHwHTHvAM", composer: "Mitsukiyo", context: "OST 209\nメモロビ:ツバキ(ガイド)、ノア(パジャマ)、フユ", imageUrl: "https://i.ytimg.com/vi/8uXHwHTHvAM/hqdefault.jpg" },
+  { title: "Bishoujo tachi no Cliché", videoId: "JCmnhvOUPVY", composer: "KARUT", context: "OST 210\nメモロビ:カズサ(バンド)、キララ", imageUrl: "https://i.ytimg.com/vi/JCmnhvOUPVY/hqdefault.jpg" },
+  { title: "Fury of Set", videoId: "ezerg6BEPGQ", composer: "KARUT", context: "OST 212\n制約解除決戦セトの憤怒", imageUrl: "https://i.ytimg.com/vi/ezerg6BEPGQ/hqdefault.jpg" },
+  { title: "OHAYOU Daily morning", videoId: "Po8Y5lpXYiQ", composer: "KARUT", context: "OST 214\nメモロビ:モモイ(メイド)、フブキ(水着)、ヒヨリ(水着)", imageUrl: "https://i.ytimg.com/vi/Po8Y5lpXYiQ/hqdefault.jpg" },
+  { title: "Starry Sky", videoId: "K1-KHNL9Bjw", composer: "Nor", context: "OST 215\nメモロビ:ヨシミ(バンド)、サオリ(水着)", imageUrl: "https://i.ytimg.com/vi/K1-KHNL9Bjw/hqdefault.jpg" },
+  { title: "Miracle", videoId: "GO_mCsXhARo", composer: "Nor", context: "OST 216\nメモロビ:ウミカ、カンナ(水着)、ユウカ(パジャマ)、フィーナ(ガイド)、カノエ", imageUrl: "https://i.ytimg.com/vi/GO_mCsXhARo/hqdefault.jpg" },
+  { title: "Shoujo Sorrow", videoId: "bfUbL1Zi4yQ", composer: "Mitsukiyo", context: "OST 217", imageUrl: "https://i.ytimg.com/vi/bfUbL1Zi4yQ/hqdefault.jpg" },
+  { title: "Achromatic Prism", videoId: "dtOgwxHBg8s", composer: "Mitsukiyo", context: "OST 218", imageUrl: "https://i.ytimg.com/vi/dtOgwxHBg8s/hqdefault.jpg" },
+  { title: "Our Oath", videoId: "fE7DfVwBzYI", composer: "KARUT", context: "OST 219", imageUrl: "https://i.ytimg.com/vi/fE7DfVwBzYI/hqdefault.jpg" },
+  { title: "Dazzle Everyday", videoId: "m-FWEelzltg", composer: "Mitsukiyo", context: "OST 220\nメモロビ:ミドリ(メイド)、キリノ(水着)", imageUrl: "https://i.ytimg.com/vi/m-FWEelzltg/hqdefault.jpg" },
+  { title: "U mak3 m3 smil3", videoId: "wf51GWEvgzo", composer: "KARUT", context: "OST 221\nメモロビ:セリカ(水着)、ミネ(アイドル)、ナツ(バンド)", imageUrl: "https://i.ytimg.com/vi/wf51GWEvgzo/hqdefault.jpg" },
+  { title: "Candy Step", videoId: "9WgvG3DwCLU", composer: "Nor", context: "OST 222\nメモロビ:アイリ(バンド)、マリナ(チーパオ)、ミサキ(水着)", imageUrl: "https://i.ytimg.com/vi/9WgvG3DwCLU/hqdefault.jpg" },
+  { title: "Scarlet Chrysanthemum", videoId: "IPtwLFM-2ns", composer: "Airuei", context: "OST 223", imageUrl: "https://i.ytimg.com/vi/IPtwLFM-2ns/hqdefault.jpg" },
+  { title: "Flip Flap Festival!", videoId: "cvd7yimrR0Y", composer: "Synthion", context: "OST 224", imageUrl: "https://i.ytimg.com/vi/cvd7yimrR0Y/hqdefault.jpg" },
+  { title: "Prophets", videoId: "efCyTDuEvP8", composer: "KARUT", context: "OST 225", imageUrl: "https://i.ytimg.com/vi/efCyTDuEvP8/hqdefault.jpg" },
+  { title: "Tremendous Celebration", videoId: "7MEDBImjFL4", composer: "7mai", context: "OST 226\nメモロビ:サクラコ(アイドル)", imageUrl: "https://i.ytimg.com/vi/7MEDBImjFL4/hqdefault.jpg" },
+  { title: "0k@eri", videoId: "x5ZVxUi16AQ", composer: "Mitsukiyo", context: "OST 228\nメモロビ:シロコ＊テラー、レイサ(マジカル)", imageUrl: "https://i.ytimg.com/vi/x5ZVxUi16AQ/hqdefault.jpg" },
+  { title: "Sudden Onset Disaster", videoId: "qQEoE25eCoU", composer: "KARUT", context: "OST 229", imageUrl: "https://i.ytimg.com/vi/qQEoE25eCoU/hqdefault.jpg" },
+  { title: "Succession", videoId: "IQXbaw6XfXY", composer: "EmoCosine", context: "OST 230", imageUrl: "https://i.ytimg.com/vi/IQXbaw6XfXY/hqdefault.jpg" },
+  { title: "Oukaranman", videoId: "H4JnF1VtNlY", composer: "EmoCosine", context: "OST 231", imageUrl: "https://i.ytimg.com/vi/H4JnF1VtNlY/hqdefault.jpg" },
+  { title: "The Eruption", videoId: "gpxqvFAYARc", composer: "KARUT", context: "OST 232\n制約解除決戦コクマー", imageUrl: "https://i.ytimg.com/vi/gpxqvFAYARc/hqdefault.jpg" },
+  { title: "OST 233", videoId: "z_vEwtQUjlc", composer: "Unknown", context: "OST 233", quiz: false, imageUrl: "https://i.ytimg.com/vi/z_vEwtQUjlc/hqdefault.jpg" },
+  { title: "U-n.I", videoId: "9GZyOeyx4R0", composer: "Mitsukiyo", context: "OST 234\nメモロビ:ホシノ(臨戦)、マリー(アイドル)", imageUrl: "https://i.ytimg.com/vi/9GZyOeyx4R0/hqdefault.jpg" },
+  { title: "Sugary Holiday", videoId: "jrDqi4niR1I", composer: "EmoCosine", context: "OST 235", imageUrl: "https://i.ytimg.com/vi/jrDqi4niR1I/hqdefault.jpg" },
+  { title: "P.A.J.A.M.A Sleep Over", videoId: "vzhASCnlfe4", composer: "KARUT", context: "OST 236", imageUrl: "https://i.ytimg.com/vi/vzhASCnlfe4/hqdefault.jpg" },
+  { title: "Peaceful Day", videoId: "4GcZsyY6LZs", composer: "EmoCosine", context: "OST 237\nメモロビ:アツコ(水着)、レイジョ", quiz: false, imageUrl: "https://i.ytimg.com/vi/4GcZsyY6LZs/hqdefault.jpg" },
+  { title: "NekoTime", videoId: "cRnwLemk6ng", composer: "Mitsukiyo", context: "OST 239\nメモロビ:ミヨ", imageUrl: "https://i.ytimg.com/vi/cRnwLemk6ng/hqdefault.jpg" },
+  { title: "InuTime", videoId: "OCn2MGJfFMg", composer: "Mitsukiyo", context: "OST 240\nメモロビ:チアキ、マキ(キャンプ)、ハスミ(水着)、スズミ(マジカル)", imageUrl: "https://i.ytimg.com/vi/OCn2MGJfFMg/hqdefault.jpg" },
+  { title: "DAN! DAN!! INVADER!!!", videoId: "auhPw1NBqgE", composer: "KARUT", context: "OST 241", imageUrl: "https://i.ytimg.com/vi/auhPw1NBqgE/hqdefault.jpg" },
+  { title: "OST 242", videoId: "n1_8YzRMslM", composer: "Unknown", context: "OST 242", quiz: false, imageUrl: "https://i.ytimg.com/vi/n1_8YzRMslM/hqdefault.jpg" },
+  { title: "OST 243", videoId: "vWZWU8r-rRA", composer: "Unknown", context: "OST 243", quiz: false, imageUrl: "https://i.ytimg.com/vi/vWZWU8r-rRA/hqdefault.jpg" },
+  { title: "Sunset Memory", videoId: "Qy7GQxaUEyw", composer: "EmoCosine", context: "OST 244\nメモロビ:セナ(私服)、レンゲ(水着)", imageUrl: "https://i.ytimg.com/vi/Qy7GQxaUEyw/hqdefault.jpg" },
+  { title: "Expo Festa", videoId: "-hEXkUtmrP8", composer: "EmoCosine", context: "OST 245", imageUrl: "https://i.ytimg.com/vi/-hEXkUtmrP8/hqdefault.jpg" },
+  { title: "OST 246", videoId: "dyCEDeF5cXg", composer: "Unknown", context: "OST 246", quiz: false, imageUrl: "https://i.ytimg.com/vi/dyCEDeF5cXg/hqdefault.jpg" },
+  { title: "Mission Possible", videoId: "3FFl0Q1DdKE", composer: "EmoCosine", context: "OST 247", imageUrl: "https://i.ytimg.com/vi/3FFl0Q1DdKE/hqdefault.jpg" },
+  { title: "Music for Your Soul", videoId: "PApB2XglEA0", composer: "Mitsukiyo", context: "OST 249", imageUrl: "https://i.ytimg.com/vi/PApB2XglEA0/hqdefault.jpg" },
+  { title: "Play Ball!", videoId: "gF0EDOoMJrY", composer: "EmoCosine", context: "OST 250", imageUrl: "https://i.ytimg.com/vi/gF0EDOoMJrY/hqdefault.jpg" },
+  { title: "The Runaway Until You Die", videoId: "nu4IJU3pZyg", composer: "KARUT", context: "OST 251", imageUrl: "https://i.ytimg.com/vi/nu4IJU3pZyg/hqdefault.jpg" },
+  { title: "Playful Maniac", videoId: "GxvRQZhvhdA", composer: "Mitsukiyo", context: "OST 252", imageUrl: "https://i.ytimg.com/vi/GxvRQZhvhdA/hqdefault.jpg" },
+  { title: "WE'RE CCC", videoId: "vY8BLgk-A_U", composer: "EmoCosine", context: "OST 253", imageUrl: "https://i.ytimg.com/vi/vY8BLgk-A_U/hqdefault.jpg" },
+  { title: "OST 254", videoId: "oUjxLLLOdzQ", composer: "Unknown", context: "OST 254", quiz: false, imageUrl: "https://i.ytimg.com/vi/oUjxLLLOdzQ/hqdefault.jpg" },
+  { title: "Sweet Allegro", videoId: "rkcePqEtTRI", composer: "EmoCosine", context: "OST 255\nメモロビ:ジュリ(バイト)", imageUrl: "https://i.ytimg.com/vi/rkcePqEtTRI/hqdefault.jpg" },
+  { title: "The Loop of Life", videoId: "yJjENAPZpEk", composer: "KARUT", context: "OST 256", imageUrl: "https://i.ytimg.com/vi/yJjENAPZpEk/hqdefault.jpg" },
+  { title: "Funk 4 Dummies", videoId: "WmM8SW1GorA", composer: "Aiobahn", context: "OST 257", imageUrl: "https://i.ytimg.com/vi/WmM8SW1GorA/hqdefault.jpg" },
+  { title: "OST 258", videoId: "ufHrOQgynRE", composer: "Unknown", context: "OST 258", quiz: false, imageUrl: "https://i.ytimg.com/vi/ufHrOQgynRE/hqdefault.jpg" },
+  { title: "OST 261", videoId: "x1qbEB_3Cjg", composer: "Unknown", context: "OST 261", quiz: false, imageUrl: "https://i.ytimg.com/vi/x1qbEB_3Cjg/hqdefault.jpg" },
+  { title: "Odekake", videoId: "qx8_ZbueTlc", composer: "EmoCosine", context: "OST 262", imageUrl: "https://i.ytimg.com/vi/qx8_ZbueTlc/hqdefault.jpg" },
+  { title: "OST 263", videoId: "tufQqFTIOb8", composer: "Unknown", context: "OST 263\nメモロビ:レイ、リツ", quiz: false, imageUrl: "https://i.ytimg.com/vi/tufQqFTIOb8/hqdefault.jpg" },
+  { title: "Breaking Silence", videoId: "L7C-hty7ONg", composer: "Mitsukiyo", context: "OST 264\nメモロビ:セイア、キキョウ(水着)", imageUrl: "https://i.ytimg.com/vi/L7C-hty7ONg/hqdefault.jpg" },
+  { title: "OST 265", videoId: "xUzka0n9T5U", composer: "Mitsukiyo", context: "OST 265\nメモロビ:リオ、タカネ", quiz: false, imageUrl: "https://i.ytimg.com/vi/xUzka0n9T5U/hqdefault.jpg" },
+  { title: "OST 266", videoId: "04rUEmcjkLQ", composer: "Unknown", context: "OST 266\nメモロビ:アスナ(制服)、ヒカリ", quiz: false, imageUrl: "https://i.ytimg.com/vi/04rUEmcjkLQ/hqdefault.jpg" },
+  { title: "OST 267", videoId: "-75jUnJhHc0", composer: "Unknown", context: "OST 267\nメモロビ:カリン(制服)、アオバ、ユカリ(水着)", quiz: false, imageUrl: "https://i.ytimg.com/vi/-75jUnJhHc0/hqdefault.jpg" },
+  { title: "Love Story", videoId: "Q9zuTntcFFc", composer: "EmoCosine", similarGroup: 15,context: "OST 268\nメモロビ:ネル(制服)、スミレ(バイト)、ノゾミ、エリ、ミチル(ドレス)", imageUrl: "https://i.ytimg.com/vi/Q9zuTntcFFc/hqdefault.jpg" },
+  { title: "OST 274", videoId: "xmHpLV90Koc", composer: "KARUT", context: "OST 274\n制約解除決戦ティファレト/前半", quiz: false, imageUrl: "https://i.ytimg.com/vi/xmHpLV90Koc/hqdefault.jpg" },
+  { title: "OST 275", videoId: "4YphInJnAMg", composer: "KARUT", context: "OST 275\n制約解除決戦ティファレト/後半", quiz: false, imageUrl: "https://i.ytimg.com/vi/4YphInJnAMg/hqdefault.jpg" },
+  { title: "Last Station", videoId: "9rKdYHHzjG4", composer: "EmoCosine", context: "OST 276", imageUrl: "https://i.ytimg.com/vi/9rKdYHHzjG4/hqdefault.jpg" },
+  { title: "OST 279", videoId: "zfDxdH7r18Y", composer: "Unknown", context: "OST 279", quiz: false, imageUrl: "https://i.ytimg.com/vi/zfDxdH7r18Y/hqdefault.jpg" },
+  { title: "Lonely Flower", videoId: "lVng5d2A_Mk", composer: "EmoCosine", context: "OST 280", imageUrl: "https://i.ytimg.com/vi/lVng5d2A_Mk/hqdefault.jpg" },
+  { title: "Laboratorium Occultum", videoId: "q8rm35Lw1YY", composer: "KARUT", context: "OST 281", imageUrl: "https://i.ytimg.com/vi/q8rm35Lw1YY/hqdefault.jpg" },
+  { title: "OST 282", videoId: "ptY-yPZPMwk", composer: "Unknown", context: "OST 282", quiz: false, imageUrl: "https://i.ytimg.com/vi/ptY-yPZPMwk/hqdefault.jpg" },
+  { title: "4You Harmonica Arrange", videoId: "Vwpp-OpajG4", composer: "Mitsukiyo", context: "OST 283", imageUrl: "https://i.ytimg.com/vi/Vwpp-OpajG4/hqdefault.jpg" },
+  { title: "OST 284", videoId: "ilZwgvn3Pdo", composer: "Unknown", context: "OST 284", quiz: false, imageUrl: "https://i.ytimg.com/vi/ilZwgvn3Pdo/hqdefault.jpg" },
+  { title: "OST 285", videoId: "EAs7I5MEMrE", composer: "Unknown", context: "OST 285", quiz: false, imageUrl: "https://i.ytimg.com/vi/EAs7I5MEMrE/hqdefault.jpg" },
+  { title: "OST 286", videoId: "IYWROacuFbc", composer: "Unknown", context: "OST 286", quiz: false, imageUrl: "https://i.ytimg.com/vi/IYWROacuFbc/hqdefault.jpg" },
+  { title: "OST 287", videoId: "oshApSRp5p8", composer: "Unknown", context: "OST 287", quiz: false, imageUrl: "https://i.ytimg.com/vi/oshApSRp5p8/hqdefault.jpg" },
+  { title: "OST 288", videoId: "0CSYBWHkiLs", composer: "Unknown", context: "OST 288", quiz: false, imageUrl: "https://i.ytimg.com/vi/0CSYBWHkiLs/hqdefault.jpg" },
+  { title: "Summer Survival!", videoId: "SEoWBG9Cvuw", composer: "EmoCosine", similarGroup: 24,context: "OST 289", imageUrl: "https://i.ytimg.com/vi/SEoWBG9Cvuw/hqdefault.jpg" },
+  { title: "Shining Seaside", videoId: "GHaS6h4UZaA", composer: "Mitsukiyo", similarGroup: 24,context: "OST 291", imageUrl: "https://i.ytimg.com/vi/GHaS6h4UZaA/hqdefault.jpg" },
+  { title: "OST 292", videoId: "sSCZ_wAQttA", composer: "Unknown", context: "OST 292", quiz: false, imageUrl: "https://i.ytimg.com/vi/sSCZ_wAQttA/hqdefault.jpg" },
+  { title: "OST 293", videoId: "dL9FYCKRlV4", composer: "Unknown", context: "OST 293", quiz: false, imageUrl: "https://i.ytimg.com/vi/dL9FYCKRlV4/hqdefault.jpg" },
+  { title: "OST 294", videoId: "XXZ_TcOHXaY", composer: "Unknown", context: "OST 294", quiz: false, imageUrl: "https://i.ytimg.com/vi/XXZ_TcOHXaY/hqdefault.jpg" },
+  { title: "OST 295", videoId: "u_id-29xj60", composer: "EmoCosine", context: "OST 295", quiz: false, imageUrl: "https://i.ytimg.com/vi/u_id-29xj60/hqdefault.jpg" },
+  { title: "Wachawacha Rush", videoId: "6yAw5Uxjj8c", composer: "Mitsukiyo", context: "OST 296", imageUrl: "https://i.ytimg.com/vi/6yAw5Uxjj8c/hqdefault.jpg" },
+  { title: "OST 297", videoId: "f_3DNZtlGZU", composer: "Unknown", context: "OST 297", quiz: false, imageUrl: "https://i.ytimg.com/vi/f_3DNZtlGZU/hqdefault.jpg" },
+  { title: "You’re My Princess", videoId: "SFETQKiqPu4", composer: "EmoCosine", context: "OST 298\nメモロビ:ミカ(水着)", imageUrl: "https://i.ytimg.com/vi/SFETQKiqPu4/hqdefault.jpg" },
+  { title: "OST 299", videoId: "JJr054EMO4U", composer: "KARUT", context: "OST 299\nメモロビ:セイア(水着)", quiz: false, imageUrl: "https://i.ytimg.com/vi/JJr054EMO4U/hqdefault.jpg" },
+  { title: "OST 300", videoId: "oDIazvE-kzQ", composer: "Unknown", context: "OST 300\nメモロビ:ナギサ(水着)", quiz: false, imageUrl: "https://i.ytimg.com/vi/oDIazvE-kzQ/hqdefault.jpg" },
+  { title: "Someday Certainly inst arrange", videoId: "IxInQQu8B1M", composer: "KARUT", context: "OST 302", imageUrl: "https://i.ytimg.com/vi/IxInQQu8B1M/hqdefault.jpg" },
+  { title: "OST 303", videoId: "8Slkc86yD5E", composer: "Unknown", context: "OST 303", quiz: false, imageUrl: "https://i.ytimg.com/vi/8Slkc86yD5E/hqdefault.jpg" },
+  { title: "OTKMARCHING!", videoId: "Ji1Sr7KCNt0", composer: "KARUT", context: "OST 317", imageUrl: "https://i.ytimg.com/vi/Ji1Sr7KCNt0/hqdefault.jpg" },
+  { title: "Run Way My Way", videoId: "nOjIwYsKEG0", composer: "EmoCosine", context: "OST 318", imageUrl: "https://i.ytimg.com/vi/nOjIwYsKEG0/hqdefault.jpg" },
+  { title: "OST 329", videoId: "0HbYZE_TJhY", composer: "Unknown", context: "OST 329", quiz: false, imageUrl: "https://i.ytimg.com/vi/0HbYZE_TJhY/hqdefault.jpg" },
+  { title: "Steel Horizon", videoId: "LTajh-MEEPw", composer: "Mitsukiyo", context: "OST 330", imageUrl: "https://i.ytimg.com/vi/LTajh-MEEPw/hqdefault.jpg" },
+  { title: "OST 331", videoId: "oRvaoiqXQqE", composer: "Unknown", context: "OST 331", quiz: false, imageUrl: "https://i.ytimg.com/vi/oRvaoiqXQqE/hqdefault.jpg" },
+  { title: "OST 332", videoId: "01iivO2xRaM", composer: "Mitsukiyo", context: "OST 332\n総力戦イェソド/前半", quiz: false, imageUrl: "https://i.ytimg.com/vi/01iivO2xRaM/hqdefault.jpg" },
+  { title: "OST 333", videoId: "2wSqxOFSr6I", composer: "Mitsukiyo", context: "OST 333\n総力戦イェソド/後半", quiz: false, imageUrl: "https://i.ytimg.com/vi/2wSqxOFSr6I/hqdefault.jpg" },
+  { title: "OST 340", videoId: "C8MpBkjjPTs", composer: "Unknown", context: "OST 340\nメモロビ:リオ(臨戦)", quiz: false, imageUrl: "https://i.ytimg.com/vi/C8MpBkjjPTs/hqdefault.jpg" },
+  { title: "OST 341", videoId: "mP_dEztTzyI", composer: "EmoCosine", context: "OST 341\nメモロビ:ヒマリ(臨戦)", quiz: false, imageUrl: "https://i.ytimg.com/vi/mP_dEztTzyI/hqdefault.jpg" },
+  { title: "OST 342", videoId: "QsruZz8Xjb4", composer: "Unknown", context: "OST 342\nメモロビ:トキ(臨戦)", quiz: false, imageUrl: "https://i.ytimg.com/vi/QsruZz8Xjb4/hqdefault.jpg" },
+{ title: "エブリディいっしょ♪", videoId: "-VIZ_cbfxcE", composer: "アロナ / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/-VIZ_cbfxcE/hqdefault.jpg" },
+  { title: "Get Over the World", videoId: "tlR2YunPNjA", composer: "Veritas / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/tlR2YunPNjA/hqdefault.jpg" },
+  { title: "一日一惡★レッツゴー！", videoId: "nLAtkP-SiEY", composer: "便利屋68 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/nLAtkP-SiEY/hqdefault.jpg" },
+  { title: "忍術研究部！只今参上！の巻。", videoId: "MIFGEBmJGeY", composer: "忍術研究部 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/MIFGEBmJGeY/hqdefault.jpg" },
+  { title: "手つなぎハッピーエンド", videoId: "N-AJnA7zbQQ", composer: "補習授業部 / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/N-AJnA7zbQQ/hqdefault.jpg" },
+  { title: "パフェダイアリーズ", videoId: "-mYPRYl0Hhc", composer: "放課後スイーツ部 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/-mYPRYl0Hhc/hqdefault.jpg" },
+  { title: "美食追求の道　～いただきます！～", videoId: "hILMTy0UTDw", composer: "美食研究会 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/hILMTy0UTDw/hqdefault.jpg" },
+  { title: "進み続ける兎たち", videoId: "I-T40GF9Vy0", composer: "RABBIT小隊 / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/I-T40GF9Vy0/hqdefault.jpg" },
+  { title: "一緒の約束", videoId: "es7rgaAX-BE", composer: "対策委員会 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/es7rgaAX-BE/hqdefault.jpg" },
+  { title: "純真レゾンデートル", videoId: "I_jfZoeyNSQ", composer: "風紀委員会 / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/I_jfZoeyNSQ/hqdefault.jpg" },
+  { title: "うららか☆SYUGYOU", videoId: "AMVWT1qgcw8", composer: "修行部 / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/AMVWT1qgcw8/hqdefault.jpg" },
+  { title: "パトランプハーモニー！", videoId: "tbxZ5naf-jI", composer: "ヴァルキューレ / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/tbxZ5naf-jI/hqdefault.jpg" },
+  { title: "笑顔 はなまる Happy Day", videoId: "-D_yjn6YUa4", composer: "梅花園 / 夕野ヨシミ(IOSYS) / john=hive(IOSYS) / EmoCosine", context: "", imageUrl: "https://i.ytimg.com/vi/-D_yjn6YUa4/hqdefault.jpg" },
+  { title: "発明！ロマン！Engineer Dream！！", videoId: "1kjkh0svH4E", composer: "エンジニア部 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/1kjkh0svH4E/hqdefault.jpg" },
+  { title: "黒翼が奏でる正義", videoId: "s9jqvjjPouA", composer: "正義実現委員会 / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/s9jqvjjPouA/hqdefault.jpg" },
+  { title: "出発進行！ハイランダー！！", videoId: "sxPOS_8JYPc", composer: "ハイランダー / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/sxPOS_8JYPc/hqdefault.jpg" },
+  
+  { title: "あゆみ", videoId: "_Dd0HKNakSY", composer: "シロコ(CV:小倉唯) / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/_Dd0HKNakSY/hqdefault.jpg" },
+  { title: "これが私のハードボイルド！？", videoId: "D0P7GouqHJ0", composer: "アル(CV:近藤玲奈) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/D0P7GouqHJ0/hqdefault.jpg" },
+  { title: "好きなんです！", videoId: "5p3z3SGKKfo", composer: "ヒフミ(CV:本渡楓) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/5p3z3SGKKfo/hqdefault.jpg" },
+  { title: "ぷかぷかぴ～す", videoId: "RKmqwsoFsRM", composer: "ホシノ(CV:花守ゆみり) / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/RKmqwsoFsRM/hqdefault.jpg" },
+  { title: "主殿のお傍でニンニンニン", videoId: "RkPR26C_Hec", composer: "イズナ(CV:阿澄佳奈) / 夕野ヨシミ(IOSYS) / EmoCosine", context: "", imageUrl: "https://i.ytimg.com/vi/RkPR26C_Hec/hqdefault.jpg" },
+  { title: "月導", videoId: "PM39YKR6bYA", composer: "ミヤコ(CV:藤田茜) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/PM39YKR6bYA/hqdefault.jpg" },
+  { title: "コントロールできない感情という変数", videoId: "KWAb5UwPH6E", composer: "ユウカ(CV:春花らん) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/KWAb5UwPH6E/hqdefault.jpg" },
+  { title: "勇者アリスの大冒険！", videoId: "q03EvQNBv-0", composer: "アリス(CV:田中美海) / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/q03EvQNBv-0/hqdefault.jpg" },
+  { title: "夜明けのコーヒーの香り", videoId: "i0PeHvBuNng", composer: "カンナ(CV:松岡美里) / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/i0PeHvBuNng/hqdefault.jpg" },
+  { title: "Victory Sky", videoId: "K94lbxi6fXc", composer: "ネル(CV:小清水亜美) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/K94lbxi6fXc/hqdefault.jpg" },
+  { title: "Walking Night", videoId: "i8LQheFOG3Q", composer: "サオリ(CV:石上静香) / john=hive(IOSYS) / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/i8LQheFOG3Q/hqdefault.jpg" },
+  { title: "イマハカラメル ―Sweeten Up Later", videoId: "40nRbwz7NTE", composer: "ヨシミ(CV:真野あゆみ) / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/40nRbwz7NTE/hqdefault.jpg" },
+  { title: "憧れの日々", videoId: "kDJ60PreH-s", composer: "フウカ(CV:ファイルーズあい) / john=hive(IOSYS) / EmoCosine", context: "", imageUrl: "https://i.ytimg.com/vi/kDJ60PreH-s/hqdefault.jpg" },
+  { title: "Hand in Hand, Heart in Heart", videoId: "6TPuTDDHkMk", composer: "ノノミ(CV:三浦千幸) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/6TPuTDDHkMk/hqdefault.jpg" },
+  { title: "記憶と記録の間に", videoId: "I6LhzSm2QZ4", composer: "ノア(CV:鈴代紗弓) / john=hive(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/I6LhzSm2QZ4/hqdefault.jpg" },
+  { title: "看板娘のヒミツ素顔", videoId: "oop0FQ3upks", composer: "シズコ(CV:森永千才) / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/oop0FQ3upks/hqdefault.jpg" },
+  { title: "アスナのまにまに？", videoId: "VVZHoHDLce4", composer: "アスナ(CV:長谷川育美) / john=hive(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/VVZHoHDLce4/hqdefault.jpg" },
+  { title: "紡ぐ時間", videoId: "MZfuZ3HcrvA", composer: "セナ(CV:大西沙織) / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/MZfuZ3HcrvA/hqdefault.jpg" },
+  { title: "Happy×Smiley", videoId: "vBoTaPGU64E", composer: "ハナエ(CV:優木かな) / john=hive(IOSYS) / EmoCosine", context: "", imageUrl: "https://i.ytimg.com/vi/vBoTaPGU64E/hqdefault.jpg" },
+  { title: "温もりのそばで、羽を預けて", videoId: "csGoYUHdU2o", composer: "ヒナ(CV:広橋涼) / john=hive(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/csGoYUHdU2o/hqdefault.jpg" },
+  { title: "幸せになるよ", videoId: "VWFe3AzwHmI", composer: "ミカ(CV:東山奈央) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/VWFe3AzwHmI/hqdefault.jpg" },
+  
+  { title: "Clear Morning", videoId: "rFeBMv98X30", composer: "小倉 唯", context: "", imageUrl: "https://i.ytimg.com/vi/rFeBMv98X30/hqdefault.jpg" },
+  { title: "わたしたちのクエスト", videoId: "lsQrEl4znzo", composer: "モモイ(CV.徳井青空) / ミドリ(CV.高田憂希) / ユズ(CV.寺澤百花) / アリス(CV.田中美海) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/lsQrEl4znzo/hqdefault.jpg" },
+  { title: "優しさの記憶", videoId: "GXh57ZcnyYg", composer: "鹿乃 / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/GXh57ZcnyYg/hqdefault.jpg" },
+  { title: "夢路の花", videoId: "y3Yl6AbMq5c", composer: "ヒナ(CV:広橋涼) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/y3Yl6AbMq5c/hqdefault.jpg" },
+  { title: "彩りキャンバス", videoId: "w5WvFaxj2sg", composer: "SUGAR RUSH / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/w5WvFaxj2sg/hqdefault.jpg" },
+  { title: "Paint It Now", videoId: "0Xz36qQc5ts", composer: "サオリ(CV:石上静香) / KARUT / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/0Xz36qQc5ts/hqdefault.jpg" },
+  { title: "トモダチOneStep", videoId: "zCt_nF0dbrA", composer: "Antique Seraphim / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/zCt_nF0dbrA/hqdefault.jpg" },
+  { title: "Romantic Seaside", videoId: "EDXWl5e_7sQ", composer: "セイア(CV:種﨑敦美) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/EDXWl5e_7sQ/hqdefault.jpg" },
+  { title: "夕映えの約束", videoId: "R0vKdguNzm0", composer: "Mitsukiyo / kotono / SERENTIUM", context: "", imageUrl: "https://i.ytimg.com/vi/R0vKdguNzm0/hqdefault.jpg" },
+  { title: "Someday Certainly", videoId: "9g0OSFtY3_w", composer: "スズミ（CV:社本悠) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/9g0OSFtY3_w/hqdefault.jpg" },
+  { title: "キラメクMiLieへ", videoId: "5kLgrWJLl5o", composer: "アリス(CV:田中美海) / アル(CV:近藤玲奈) / ヒフミ(CV:本渡楓) / ユウカ(CV:春花らん) / 夕野ヨシミ(IOSYS) / KOJI oba", context: "", imageUrl: "https://i.ytimg.com/vi/5kLgrWJLl5o/hqdefault.jpg" },
+  { title: "かがやきサマーデイズ", videoId: "KQSzd7gV8NU", composer: "ホシノ(CV:花守ゆみり) / シロコ(CV:小倉唯) / ノノミ(CV:三浦千幸) / セリカ(CV:大橋彩香) / アヤネ(CV:原田彩楓) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/KQSzd7gV8NU/hqdefault.jpg" },
+  { title: "LA LA RUN!", videoId: "QPPuW4MVMuc", composer: "ヒナ(CV:広橋涼) / セナ(CV:大西沙織) / セリナ(CV:涼本あきほ) / Nor / YUC'e", context: "", imageUrl: "https://i.ytimg.com/vi/QPPuW4MVMuc/hqdefault.jpg" },
+  { title: "ワンダー・ファニー・ハーモニー", videoId: "anr3gW5jLv8", composer: "サクラコ(CV:加隈亜衣) / ヒナタ(CV:日高里菜) / マリー(CV:小澤亜李) / ウイ(CV:後藤沙緒里) / シミコ(CV:富田美憂) / ヒフミ(CV:本渡楓) / アズサ(CV:種田梨沙) / ハナコ(CV:豊田萌絵) / コハル(CV:赤尾ひかる) / ミカ(CV:東山奈央) / ツルギ(CV:小林ゆう) / イチカ(CV:鷲見友美ジェナ) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/anr3gW5jLv8/hqdefault.jpg" },
+  { title: "澄んだ青空、萌ゆる心", videoId: "p5QTchfdITg", composer: "カスミ(CV.上坂すみれ) / ユカリ(CV.村上まなつ) / モミジ(CV.大亀あすか) / ハレ(CV.貝原玲奈)/ エイミ(CV.松永あかね)", context: "", imageUrl: "https://i.ytimg.com/vi/p5QTchfdITg/hqdefault.jpg" },
+  { title: "全力絶対Come☆True", videoId: "46ZRRDFQehg", composer: "アリス(CV:田中美海) / アル(CV:近藤玲奈) / ノノミ(CV:三浦千幸) / ヒフミ(CV:本渡楓) / ユウカ(CV:春花らん) / 夕野ヨシミ(IOSYS)", context: "", imageUrl: "https://i.ytimg.com/vi/46ZRRDFQehg/hqdefault.jpg" },
+  { title: "青春のアーカイブ", videoId: "Ybw4X3u25s8", composer: "ホシノ(CV:花守ゆみり) / シロコ(CV:小倉唯) / ノノミ(CV:三浦千幸) / セリカ(CV:大橋彩香) / アヤネ(CV:原田彩楓) / 40mP", context: "", imageUrl: "https://i.ytimg.com/vi/Ybw4X3u25s8/hqdefault.jpg" },
+  { title: "真昼の空の月", videoId: "UOnafB7rF8k", composer: "ホシノ(CV:花守ゆみり) / シロコ(CV:小倉唯) / ノノミ(CV:三浦千幸) / セリカ(CV:大橋彩香) / アヤネ(CV:原田彩楓) / RED", context: "", imageUrl: "https://i.ytimg.com/vi/UOnafB7rF8k/hqdefault.jpg" },
+  { title: "ありがとう、そしてこれからも。", videoId: "kyQombmC6Yg", composer: "カズサ(CV:夏吉ゆうこ) / キキョウ(CV:小松未可子) / キサキ(CV:相坂優歌) / コユキ(CV:乾夏寧) / サオリ(CV:石上静香) / シロコ*テラー(CV:小倉唯) / ヒナ(CV:広橋涼) / ホシノ(CV:花守ゆみり) / マリー(CV:小澤亜李) / マリナ(CV:平井祥恵) / ユウカ(CV:春花らん) / Mitsukiyo / ワカツジスバル", context: "", imageUrl: "https://i.ytimg.com/vi/kyQombmC6Yg/hqdefault.jpg" },
+  { title: "Let's Go With…", videoId: "PdnDedDp-5A", composer: "アスナ(CV:長谷川育美) / キララ(CV:山下七海) / スバル(CV:天海由梨奈) / ミカ(CV:東山奈央) / ミヨ(CV:花岩香奈) / ユカリ(CV:村上まなつ) / Mitsukiyo / 夕野ヨシミ(IOSYS)", context: "", imageUrl: "https://i.ytimg.com/vi/PdnDedDp-5A/hqdefault.jpg" },
+  ];
+};
+
+const App = () => {
+  const [songs, setSongs] = useState([]);
+  const [ranking, setRanking] = useState(Array(10).fill(null).map(() => ({ song: null, comment: "" })));
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const rankingRef = useRef(null);
+
+  useEffect(() => {
+    setSongs(getPlaylist());
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  }, []);
+
+  const filteredSongs = useMemo(() => {
+    return songs.filter(song => 
+      song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      song.composer.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [songs, searchTerm]);
+
+  const selectSong = (song) => {
+    const newRanking = [...ranking];
+    newRanking[selectedSlot] = { ...newRanking[selectedSlot], song };
+    setRanking(newRanking);
+    
+    const nextEmpty = newRanking.findIndex((s, i) => i > selectedSlot && s.song === null);
+    if (nextEmpty !== -1) {
+      setSelectedSlot(nextEmpty);
+    }
+  };
+
+  const clearSlot = (index) => {
+    const newRanking = [...ranking];
+    newRanking[index] = { song: null, comment: "" };
+    setRanking(newRanking);
+  };
+
+  const updateComment = (index, comment) => {
+    const newRanking = [...ranking];
+    newRanking[index] = { ...newRanking[index], comment };
+    setRanking(newRanking);
+  };
+
+  const exportAsImage = async () => {
+    if (!rankingRef.current || !window.html2canvas) return;
+    setIsExporting(true);
+    
+    await new Promise(r => setTimeout(r, 800));
+
+    try {
+      const canvas = await window.html2canvas(rankingRef.current, {
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        width: 700, 
+        windowWidth: 700,
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById('export-target');
+          if (el) {
+            el.style.width = "700px";
+            el.style.height = "auto";
+            el.classList.add('is-exporting-mode');
+            
+            const allElements = el.querySelectorAll('*');
+            allElements.forEach(item => {
+                item.style.overflow = "visible";
+            });
+          }
+        }
+      });
+      const link = document.createElement('a');
+      link.download = 'blue-archive-ranking.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error("Export failed:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const getRankStyle = (index) => {
+    if (index === 0) return { border: 'border-amber-400 bg-amber-50/40', text: 'text-amber-600', icon: <Trophy className="w-5 h-5 text-amber-500" /> };
+    if (index === 1) return { border: 'border-slate-300 bg-slate-50/60', text: 'text-slate-500', icon: <Medal className="w-5 h-5 text-slate-400" /> };
+    if (index === 2) return { border: 'border-orange-300 bg-orange-50/40', text: 'text-orange-600', icon: <Medal className="w-5 h-5 text-orange-400" /> };
+    return { border: 'border-slate-100 bg-white', text: 'text-sky-300', icon: null };
+  };
+
+  const RankingSlot = ({ item, index }) => {
+    const style = getRankStyle(index);
+    const isTop3 = index < 3;
+
+    return (
+      <div 
+        onClick={() => !isExporting && setSelectedSlot(index)}
+        className={`relative flex flex-col p-5 rounded-3xl border-2 transition-all min-h-[140px] justify-between shadow-sm ${!isExporting ? 'cursor-pointer hover:translate-x-1' : ''} ${
+          !isExporting && selectedSlot === index 
+          ? 'ring-4 ring-sky-200 border-sky-400 z-10' 
+          : style.border
+        }`}
+      >
+        <div className="flex items-center gap-5 w-full">
+          <div className="flex flex-col items-center justify-center w-10 shrink-0">
+            {style.icon && <div className="mb-1">{style.icon}</div>}
+            <div className={`font-black italic leading-none ${style.text} ${isTop3 ? 'text-3xl' : 'text-2xl'}`}>
+              {index + 1}
+            </div>
+          </div>
+          
+          {item.song ? (
+            <div className="flex-1 flex items-center gap-4 min-w-0">
+              <div className="relative shrink-0">
+                <div className={`${isTop3 ? 'w-32' : 'w-24'} aspect-video overflow-hidden rounded-xl shadow-md border border-black/5`}>
+                  <img 
+                    src={item.song.imageUrl} 
+                    alt="" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => e.target.src = 'https://via.placeholder.com/160x90?text=No+Image'}
+                  />
+                </div>
+                {index === 0 && (
+                  <div className="absolute -top-3 -left-3 z-20">
+                    <Star className="w-8 h-8 text-amber-400 fill-amber-400 drop-shadow-md" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className={`font-bold truncate text-slate-800 leading-[1.4] mb-1 ${isTop3 ? 'text-[17px]' : 'text-[14px]'}`}>
+                    {item.song.title}
+                </p>
+                <p className="text-[11px] text-slate-400 truncate uppercase tracking-tight font-medium">
+                    {item.song.composer}
+                </p>
+              </div>
+
+              {!isExporting && (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); clearSlot(index); }}
+                  className="p-2 text-slate-300 hover:text-red-400 transition-colors shrink-0"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="flex-1 text-slate-300 text-sm italic">
+              楽曲を選択してください...
+            </div>
+          )}
+        </div>
+
+        {(item.comment || !isExporting) && (
+          <div className="mt-4">
+            <div className={`flex items-start gap-3 p-3 rounded-2xl border transition-colors ${
+              isExporting ? 'bg-white/50 border-transparent' : 'bg-slate-50/80 border-slate-100'
+            }`}>
+              <MessageSquare className="w-3.5 h-3.5 text-sky-200 mt-1 shrink-0" />
+              {isExporting ? (
+                <p className="text-xs leading-[1.6] text-slate-600 break-words w-full">
+                  {item.comment}
+                </p>
+              ) : (
+                <textarea
+                  value={item.comment}
+                  onChange={(e) => updateComment(index, e.target.value)}
+                  placeholder="コメントを入力..."
+                  className="w-full bg-transparent text-xs focus:outline-none resize-none h-12 leading-[1.6]"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {!isExporting && selectedSlot === index && (
+          <div className="absolute top-4 right-4">
+            <div className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-ping" />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f4f7f9] text-slate-800 font-sans p-4 md:p-8">
+      <header className="max-w-6xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-sky-100 pb-8">
+        <div>
+          <h1 className="text-4xl font-black text-sky-500 flex items-center gap-4 tracking-tighter">
+            <Music className="w-12 h-12" />
+            ブルアカ楽曲ランキングメーカー
+          </h1>
+        </div>
+        <button 
+          onClick={exportAsImage}
+          disabled={isExporting}
+          className="flex items-center gap-3 bg-sky-500 hover:bg-sky-600 text-white px-12 py-5 rounded-full font-bold shadow-2xl transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50"
+        >
+          <Download className="w-6 h-6" />
+          {isExporting ? "画像を生成中..." : "ランキングを画像で保存"}
+        </button>
+      </header>
+
+      <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="lg:col-span-7 flex justify-center">
+          <div 
+            ref={rankingRef} 
+            id="export-target"
+            className="bg-white p-8 md:p-12 rounded-[3.5rem] shadow-2xl border border-sky-50 relative overflow-hidden transition-all w-full max-w-[700px]"
+          >
+            <div className="absolute top-0 right-0 w-80 h-80 bg-sky-50/50 rounded-full -mr-40 -mt-40 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-60 h-60 bg-sky-50/30 rounded-full -ml-30 -mb-30 pointer-events-none" />
+            
+            <div className="flex items-end justify-between mb-10 border-b-4 border-sky-400 pb-4 relative z-10">
+               <h2 className="text-4xl font-black text-sky-500 uppercase tracking-widest flex items-center gap-4">
+                 <Star className="w-10 h-10 fill-sky-500" />
+                 TOP 10
+               </h2>
+            </div>
+            
+            <div className="flex flex-col gap-6 relative z-10">
+                {ranking.map((item, i) => (
+                  <RankingSlot key={i} index={i} item={item} />
+                ))}
+            </div>
+            
+            <div className="mt-16 pt-8 border-t border-slate-100 flex justify-center items-center px-4 relative z-10">
+              <span className="text-xs text-slate-300 font-mono font-bold tracking-[0.4em]">@ 2026 MUSIC RANKING MAKER</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 flex flex-col h-[85vh] sticky top-8">
+          <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 flex flex-col h-full overflow-hidden">
+            <h3 className="text-xl font-black text-slate-700 mb-6 flex items-center gap-2">
+              <Search className="w-6 h-6 text-sky-400" />
+              楽曲を追加する
+            </h3>
+            
+            <div className="relative mb-6">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-sky-300 w-5 h-5" />
+              <input 
+                type="text"
+                placeholder="曲名、アーティスト名で検索..."
+                className="w-full pl-12 pr-5 py-5 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all shadow-inner"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+              {filteredSongs.length > 0 ? (
+                filteredSongs.map((song, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={() => selectSong(song)}
+                    className="flex items-center gap-4 p-4 rounded-3xl border border-transparent hover:border-sky-200 hover:bg-sky-50 transition-all cursor-pointer group shadow-sm hover:shadow-md bg-white"
+                  >
+                    <div className="relative shrink-0 overflow-hidden rounded-2xl shadow-sm aspect-video w-24">
+                      <img 
+                        src={song.imageUrl} 
+                        alt="" 
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => e.target.src = 'https://via.placeholder.com/160x90?text=No+Image'}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-bold text-[14px] text-slate-700 truncate leading-tight group-hover:text-sky-500 transition-colors">{song.title}</h4>
+                      <p className="text-[11px] text-slate-400 truncate mt-1">{song.composer}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-24">
+                  <div className="inline-block p-4 rounded-full bg-slate-50 mb-4">
+                    <Music className="w-8 h-8 text-slate-200" />
+                  </div>
+                  <p className="text-slate-400 text-sm font-bold tracking-widest">NOT FOUND</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-50">
+              <p className="text-[10px] text-slate-300 text-center font-bold tracking-tighter">
+                ※楽曲を選択すると現在選択中の順位にセットされます。
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #cbd5e1;
+        }
+
+        .is-exporting-mode {
+          width: 700px !important;
+          max-width: 700px !important;
+        }
+        
+        .is-exporting-mode p, 
+        .is-exporting-mode div {
+          overflow: visible !important;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default App;
