@@ -462,7 +462,7 @@
                             });
                         }
                     }
-                }); // ← html2canvas をここで閉じる
+                }); // ここで html2canvas のオプションを閉じる
 
                 const link = document.createElement('a');
                 link.download = `blue-archive-ranking-${new Date().getTime()}.png`;
@@ -472,8 +472,7 @@
                 console.error('保存に失敗しました:', err);
                 alert('画像の保存に失敗しました。');
             }
-        }; // ← saveAsImage 関数をここで閉じる
-            // YouTube Playerの初期化
+        }; 
             useEffect(() => {
                 const tag = document.createElement('script');
                 tag.src = "https://www.youtube.com/iframe_api";
