@@ -441,6 +441,29 @@
                     }
                 }); // ← ここで html2canvas のカッコを閉じる
 
+                const saveAsImage = async () => {
+            const element = document.getElementById('ranking-card');
+            if (!element) return;
+
+            try {
+                const canvas = await html2canvas(element, {
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#f8fafc',
+                    scale: 3,
+                    logging: false,
+                    onclone: (clonedDoc) => {
+                        const target = clonedDoc.getElementById('ranking-card');
+                        if (target) {
+                            const texts = target.querySelectorAll('p');
+                            texts.forEach(p => {
+                                p.style.lineHeight = '1.8';
+                                p.style.paddingBottom = '4px';
+                            });
+                        }
+                    }
+                }); // ← html2canvas をここで閉じる
+
                 const link = document.createElement('a');
                 link.download = `blue-archive-ranking-${new Date().getTime()}.png`;
                 link.href = canvas.toDataURL('image/png');
@@ -449,8 +472,7 @@
                 console.error('保存に失敗しました:', err);
                 alert('画像の保存に失敗しました。');
             }
-        };
-
+        }; // ← saveAsImage 関数をここで閉じる
             // YouTube Playerの初期化
             useEffect(() => {
                 const tag = document.createElement('script');
