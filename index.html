@@ -553,16 +553,16 @@
                                                 {index + 1}
                                             </div>
                                             
-                                            {song ? (
-    <div className="flex-1 flex items-center gap-3 overflow-hidden py-1"> {/* py-1を追加して上下に余裕を作る */}
+                                           {song ? (
+    <div className="flex-1 flex items-center gap-3 overflow-visible py-2"> {/* py-2に増やし、overflow-visibleに変更 */}
         <img src={song.imageUrl} className="w-12 h-12 rounded-lg object-cover shadow-sm flex-shrink-0" alt="" />
-        <div className="min-w-0 flex-1">
-            {/* truncateを削除し、leading-tight（適切な行間）とpb-0.5（下の余白）を追加 */}
-            <p className="font-black text-sm text-slate-900 leading-tight pb-0.5 tracking-tight break-words line-clamp-1">
+        <div className="min-w-0 flex-1 flex flex-col justify-center">
+            {/* truncateを削除、leading-normal（ゆったりした行間）に変更 */}
+            <p className="font-black text-sm text-slate-900 leading-normal tracking-tight break-words" style={{ marginBottom: '2px' }}>
                 {song.title}
             </p>
-            {/* composerも同様に調整 */}
-            <p className="text-[10px] text-slate-400 font-bold uppercase leading-normal truncate">
+            {/* composerも余裕を持たせる */}
+            <p className="text-[10px] text-slate-400 font-bold uppercase leading-normal">
                 {song.composer}
             </p>
         </div>
@@ -573,7 +573,7 @@
             <Icon name="x-circle" className="w-5 h-5" />
         </button>
     </div>
-                                            ) : (
+) : (
                                                 <div className="flex-1 flex items-center">
                                                     <div className="h-px flex-1 bg-slate-100 mr-4"></div>
                                                     <span className="text-[10px] font-black text-slate-200 tracking-[0.3em] uppercase">Empty Slot</span>
