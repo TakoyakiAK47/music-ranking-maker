@@ -554,19 +554,25 @@
                                             </div>
                                             
                                             {song ? (
-                                                <div className="flex-1 flex items-center gap-3 overflow-hidden">
-                                                    <img src={song.imageUrl} className="w-12 h-12 rounded-lg object-cover shadow-sm" alt="" />
-                                                    <div className="min-w-0">
-                                                        <p className="font-black text-sm text-slate-900 truncate tracking-tight">{song.title}</p>
-                                                        <p className="text-[10px] text-slate-400 font-bold truncate uppercase">{song.composer}</p>
-                                                    </div>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); clearSlot(index); }}
-                                                        className="ml-auto p-2 text-slate-300 hover:text-red-400 transition-colors"
-                                                    >
-                                                        <Icon name="x-circle" className="w-5 h-5" />
-                                                    </button>
-                                                </div>
+    <div className="flex-1 flex items-center gap-3 overflow-hidden py-1"> {/* py-1を追加して上下に余裕を作る */}
+        <img src={song.imageUrl} className="w-12 h-12 rounded-lg object-cover shadow-sm flex-shrink-0" alt="" />
+        <div className="min-w-0 flex-1">
+            {/* truncateを削除し、leading-tight（適切な行間）とpb-0.5（下の余白）を追加 */}
+            <p className="font-black text-sm text-slate-900 leading-tight pb-0.5 tracking-tight break-words line-clamp-1">
+                {song.title}
+            </p>
+            {/* composerも同様に調整 */}
+            <p className="text-[10px] text-slate-400 font-bold uppercase leading-normal truncate">
+                {song.composer}
+            </p>
+        </div>
+        <button 
+            onClick={(e) => { e.stopPropagation(); clearSlot(index); }}
+            className="ml-auto p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
+        >
+            <Icon name="x-circle" className="w-5 h-5" />
+        </button>
+    </div>
                                             ) : (
                                                 <div className="flex-1 flex items-center">
                                                     <div className="h-px flex-1 bg-slate-100 mr-4"></div>
