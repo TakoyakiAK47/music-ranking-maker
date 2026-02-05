@@ -501,26 +501,27 @@
             return (
     <div className="min-h-screen bg-[#f0f4f8] text-slate-800 p-4 md:p-8">
         <header className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div> {/* 1. ここでタイトル全体を囲むdivを開始 */}
+            {/* 左側：タイトルエリア */}
+            <div>
                 <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic">
                     MUSIC <span className="text-sky-500">RANKING</span> MAKER
                 </h1>
                 <p className="text-slate-400 text-xs font-bold mt-1 tracking-widest uppercase">
-                    {/* ここにテキストを入れるか、空ならそのままでもOK */}
+                    Blue Archive Music Sorter
                 </p>
-            </div> {/* 2. タイトルのdivを閉じる */}
-        </header> {/* 3. headerを閉じる */}
-                        
-                        <button 
-                            onClick={downloadImage}
-                            className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-slate-200 active:scale-95"
-                        >
-                            <Icon name="share-2" className="w-5 h-5" />
-                            画像を保存する
-                        </button>
-                    </header>
+            </div> {/* divを先に閉じる */}
 
-                    <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* 右側：ボタンエリア */}
+            <button 
+                onClick={downloadImage}
+                className="bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-sky-200"
+            >
+                画像を保存する
+            </button>
+        </header> {/* 最後にheaderを閉じる */}
+
+        <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Ranking Board */}
                         {/* Ranking Board */}
                         <div className="lg:col-span-7">
                             <div id="ranking-board" className="bg-white rounded-[32px] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
