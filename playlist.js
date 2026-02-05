@@ -284,9 +284,6 @@ const playlist = [
   { title: "OST 340", videoId: "C8MpBkjjPTs", composer: "Unknown", context: "OST 340\nメモロビ:リオ(臨戦)", quiz: false, imageUrl: "https://i.ytimg.com/vi/C8MpBkjjPTs/hqdefault.jpg" },
   { title: "OST 341", videoId: "mP_dEztTzyI", composer: "EmoCosine", context: "OST 341\nメモロビ:ヒマリ(臨戦)", quiz: false, imageUrl: "https://i.ytimg.com/vi/mP_dEztTzyI/hqdefault.jpg" },
   { title: "OST 342", videoId: "QsruZz8Xjb4", composer: "Unknown", context: "OST 342\nメモロビ:トキ(臨戦)", quiz: false, imageUrl: "https://i.ytimg.com/vi/QsruZz8Xjb4/hqdefault.jpg" },
-];
-
-const characterSongPlaylist = [
   { title: "エブリディいっしょ♪", videoId: "-VIZ_cbfxcE", composer: "アロナ / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/-VIZ_cbfxcE/hqdefault.jpg" },
   { title: "Get Over the World", videoId: "tlR2YunPNjA", composer: "Veritas / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/tlR2YunPNjA/hqdefault.jpg" },
   { title: "一日一惡★レッツゴー！", videoId: "nLAtkP-SiEY", composer: "便利屋68 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/nLAtkP-SiEY/hqdefault.jpg" },
@@ -303,7 +300,6 @@ const characterSongPlaylist = [
   { title: "発明！ロマン！Engineer Dream！！", videoId: "1kjkh0svH4E", composer: "エンジニア部 / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/1kjkh0svH4E/hqdefault.jpg" },
   { title: "黒翼が奏でる正義", videoId: "s9jqvjjPouA", composer: "正義実現委員会 / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/s9jqvjjPouA/hqdefault.jpg" },
   { title: "出発進行！ハイランダー！！", videoId: "sxPOS_8JYPc", composer: "ハイランダー / 夕野ヨシミ(IOSYS) / KARUT", context: "", imageUrl: "https://i.ytimg.com/vi/sxPOS_8JYPc/hqdefault.jpg" },
-  
   { title: "あゆみ", videoId: "_Dd0HKNakSY", composer: "シロコ(CV:小倉唯) / 夕野ヨシミ(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/_Dd0HKNakSY/hqdefault.jpg" },
   { title: "これが私のハードボイルド！？", videoId: "D0P7GouqHJ0", composer: "アル(CV:近藤玲奈) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/D0P7GouqHJ0/hqdefault.jpg" },
   { title: "好きなんです！", videoId: "5p3z3SGKKfo", composer: "ヒフミ(CV:本渡楓) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/5p3z3SGKKfo/hqdefault.jpg" },
@@ -325,7 +321,6 @@ const characterSongPlaylist = [
   { title: "Happy×Smiley", videoId: "vBoTaPGU64E", composer: "ハナエ(CV:優木かな) / john=hive(IOSYS) / EmoCosine", context: "", imageUrl: "https://i.ytimg.com/vi/vBoTaPGU64E/hqdefault.jpg" },
   { title: "温もりのそばで、羽を預けて", videoId: "csGoYUHdU2o", composer: "ヒナ(CV:広橋涼) / john=hive(IOSYS) / Nor", context: "", imageUrl: "https://i.ytimg.com/vi/csGoYUHdU2o/hqdefault.jpg" },
   { title: "幸せになるよ", videoId: "VWFe3AzwHmI", composer: "ミカ(CV:東山奈央) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/VWFe3AzwHmI/hqdefault.jpg" },
-  
   { title: "Clear Morning", videoId: "rFeBMv98X30", composer: "小倉 唯", context: "", imageUrl: "https://i.ytimg.com/vi/rFeBMv98X30/hqdefault.jpg" },
   { title: "わたしたちのクエスト", videoId: "lsQrEl4znzo", composer: "モモイ(CV.徳井青空) / ミドリ(CV.高田憂希) / ユズ(CV.寺澤百花) / アリス(CV.田中美海) / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/lsQrEl4znzo/hqdefault.jpg" },
   { title: "優しさの記憶", videoId: "GXh57ZcnyYg", composer: "鹿乃 / 夕野ヨシミ(IOSYS) / Mitsukiyo", context: "", imageUrl: "https://i.ytimg.com/vi/GXh57ZcnyYg/hqdefault.jpg" },
